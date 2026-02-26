@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "ai": "^6.0.101",
     "better-sqlite3": "^12.6.2",
     "critters": "^0.0.23",
     "dotenv": "^17.3.1",
