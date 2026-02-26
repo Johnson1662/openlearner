@@ -2,22 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  ChevronRight, 
-  Sparkles, 
-  RotateCcw,
-  Zap,
-  Lightbulb
-} from 'lucide-react';
+import { X, ChevronRight, RotateCcw, Zap } from 'lucide-react';
 import { Level, LessonStep, QuizOption } from '@/types';
-import { 
-  Segmenter, 
-  Connector, 
-  Categorizer, 
-  FeedbackPanel, 
-  Confetti
-} from './interactions';
+import { Segmenter, Connector, Categorizer, FeedbackPanel, Confetti } from './interactions';
 import UserFeedbackModal, { UserFeedback } from './UserFeedbackModal';
 import ContentRenderer from './ContentRenderer';
 
@@ -40,9 +27,8 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
   const [levelSteps, setLevelSteps] = useState<LessonStep[]>(level.steps || []);
   const [showUserFeedback, setShowUserFeedback] = useState(false);
   const [feedbackAfterQuestion, setFeedbackAfterQuestion] = useState(false);
-  const [userAnswers, setUserAnswers] = useState<{stepId: string; answer: string; isCorrect: boolean}[]>([]);
+  const [userAnswers, setUserAnswers] = useState<{ stepId: string; answer: string; isCorrect: boolean }[]>([]);
 
-  // Load level content on-demand if steps are empty
   useEffect(() => {
     const loadLevelContent = async (retryCount = 0) => {
       if (level.steps.length === 0 && !isLoadingContent) {
@@ -64,14 +50,11 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
           if (data.success) {
             setLevelSteps(data.data.steps);
           } else if (retryCount < 2) {
-            console.log(`Retrying level content generation (attempt ${retryCount + 2})`);
             setTimeout(() => loadLevelContent(retryCount + 1), 1000);
             return;
           }
-        } catch (error) {
-          console.error('Failed to load level content:', error);
+        } catch {
           if (retryCount < 2) {
-            console.log(`Retrying after error (attempt ${retryCount + 2})`);
             setTimeout(() => loadLevelContent(retryCount + 1), 1000);
             return;
           }
@@ -84,7 +67,7 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
   }, [level, courseId]);
 
   const currentStep = useMemo(() => levelSteps[currentStepIndex], [levelSteps, currentStepIndex]);
-  const progress = levelSteps.length > 0 ? ((currentStepIndex + 1) / levelSteps.length) * 100 : 0;
+  const progress = levelSteps.length > 0 ? ((currentStepIndex) / levelSteps.length) * 100 : 0;
 
   useEffect(() => {
     setSelectedAnswer(null);
@@ -103,20 +86,11 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
     if (currentStep.type === 'multiple_choice') {
       const option = currentStep.options?.find(o => o.id === selectedAnswer);
       const isAnswerCorrect = option?.isCorrect || false;
-      if (isAnswerCorrect) {
-        setIsCorrect(true);
-        setXpEarned(prev => prev + 15);
-      } else {
-        setIsCorrect(false);
-      }
+      setIsCorrect(isAnswerCorrect);
+      if (isAnswerCorrect) setXpEarned(prev => prev + 15);
       setShowFeedback(true);
-      
       if (currentStep.question) {
-        setUserAnswers(prev => [...prev, {
-          stepId: currentStep.id,
-          answer: selectedAnswer || '',
-          isCorrect: isAnswerCorrect
-        }]);
+        setUserAnswers(prev => [...prev, { stepId: currentStep.id, answer: selectedAnswer || '', isCorrect: isAnswerCorrect }]);
       }
     } else if (currentStep.type === 'segmenter') {
       setIsCorrect(true);
@@ -133,22 +107,17 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
       setShowUserFeedback(true);
       return;
     }
-    
     if (currentStepIndex < levelSteps.length - 1) {
       setCurrentStepIndex(prev => prev + 1);
       setFeedbackAfterQuestion(false);
     } else {
       setShowConfetti(true);
-      setTimeout(() => {
-        setShowUserFeedback(true);
-      }, 1500);
+      setTimeout(() => setShowUserFeedback(true), 1500);
     }
   };
 
   const handlePrev = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
-    }
+    if (currentStepIndex > 0) setCurrentStepIndex(prev => prev - 1);
   };
 
   const handleRetry = () => {
@@ -157,10 +126,8 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
     setStepData(null);
   };
 
-  const handleUserFeedbackSubmit = (feedback: UserFeedback) => {
-    console.log('User feedback after question:', feedback, 'Answers:', userAnswers);
+  const handleUserFeedbackSubmit = (_feedback: UserFeedback) => {
     setShowUserFeedback(false);
-    
     if (currentStepIndex >= levelSteps.length - 1) {
       onComplete(xpEarned);
     } else {
@@ -170,7 +137,6 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
 
   const handleUserFeedbackSkip = () => {
     setShowUserFeedback(false);
-    
     if (currentStepIndex >= levelSteps.length - 1) {
       onComplete(xpEarned);
     } else {
@@ -178,155 +144,190 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
     }
   };
 
+  const canCheck = currentStep?.type === 'info' || !!selectedAnswer || !!stepData;
+
   if (isLoadingContent || levelSteps.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-6">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-          className="w-16 h-16 border-4 border-[#58CC02] border-t-transparent rounded-full"
+          transition={{ repeat: Infinity, duration: 0.9, ease: 'linear' }}
+          className="w-16 h-16 rounded-full border-4 border-[#E5E5E5] border-t-[#58CC02]"
         />
-        <p className="mt-6 text-[#4B4B4B] text-xl font-semibold">正在生成关卡内容...</p>
+        <p className="text-[18px] font-black uppercase tracking-wide" style={{ color: '#AFAFAF' }}>
+          正在生成关卡...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans select-none">
-      {/* Back button - left side */}
-      <button
-        onClick={handlePrev}
-        disabled={currentStepIndex === 0}
-        className={`fixed left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 transition-colors ${currentStepIndex === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
-      >
-        <ChevronRight className="w-6 h-6 text-white/70 rotate-180" />
-      </button>
-
-      <header className="px-6 py-6 flex items-center gap-6 max-w-5xl mx-auto w-full">
-        <button onClick={onBack} className="text-[#AFAFAF] hover:text-[#555] transition-colors">
-          <X className="w-10 h-10 stroke-[3]" />
+    <div className="min-h-screen bg-white flex flex-col select-none font-sans">
+      {/* Header - Progress */}
+      <header className="px-4 py-4 flex items-center gap-4 max-w-3xl mx-auto w-full">
+        <button
+          onClick={onBack}
+          className="flex-shrink-0 p-1 cursor-pointer transition-colors"
+          style={{ color: '#AFAFAF' }}
+        >
+          <X className="w-9 h-9" strokeWidth={3} />
         </button>
 
-        <div className="flex-1 h-4 bg-[#E5E5E5] rounded-full overflow-hidden">
+        {/* Glowing progress bar */}
+        <div className="flex-1 progress-bar-track h-5">
           <motion.div
-            className="h-full bg-[#58CC02] rounded-full shadow-[inset_0_-2px_0_rgba(0,0,0,0.1)]"
+            className="progress-bar-fill h-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ type: 'spring', stiffness: 80, damping: 20 }}
           />
         </div>
 
-        <div className="flex items-center gap-2 text-[#E5E5E5]">
-          <Zap className="w-8 h-8 fill-current" />
+        {/* XP badge */}
+        <div
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-[14px] flex-shrink-0"
+          style={{ background: '#FFF7D6', color: '#D4A500', boxShadow: '0 2px 0 #F0E0A0' }}
+        >
+          <Zap className="w-4 h-4 fill-current" />
+          {xpEarned}
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-6 py-12">
-        <div className="max-w-2xl mx-auto w-full flex flex-col min-h-full">
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-2xl mx-auto w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentStepIndex}
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col"
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              className="flex flex-col gap-6"
             >
-              {currentStep.visualAssets?.map((asset, idx) => (
-                <div key={idx} className="mb-12 flex justify-center">
-                  {asset.type === 'image' && (
-                    <motion.img 
-                      src={asset.src} 
-                      alt={asset.alt} 
-                      className="max-h-72 object-contain"
-                      initial={{ scale: 0.8, rotate: -5 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                    />
-                  )}
-                </div>
-              ))}
+              {/* Step label */}
+              <div
+                className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-xl font-extrabold text-[12px] uppercase tracking-widest"
+                style={{ background: '#DDF4FF', color: '#1CB0F6', boxShadow: '0 2px 0 #B0E0F8' }}
+              >
+                Step {currentStepIndex + 1} / {levelSteps.length}
+              </div>
 
-              <h2 className="text-[32px] font-black text-[#4B4B4B] mb-8 leading-[1.2] tracking-tight">
+              {/* Title */}
+              <h2 className="text-[26px] font-black leading-snug" style={{ color: '#3C3C3C' }}>
                 {currentStep.title || level.title}
               </h2>
 
-              <div className="text-[20px] text-[#4B4B4B] font-medium mb-10 leading-[1.6] whitespace-pre-line">
-                <ContentRenderer content={currentStep.content} />
-              </div>
-
-              {currentStep.question && (
-                <div className="text-[24px] font-black text-[#4B4B4B] mb-10 leading-tight">
-                  {currentStep.question}
+              {/* Content */}
+              {currentStep.content && (
+                <div className="text-[17px] font-semibold leading-relaxed" style={{ color: '#3C3C3C' }}>
+                  <ContentRenderer content={currentStep.content} />
                 </div>
               )}
 
-              <div className="flex-1">
-                {currentStep.type === 'multiple_choice' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {currentStep.options?.map((option) => (
-                      <ChoiceButton
-                        key={option.id}
-                        option={option}
-                        isSelected={selectedAnswer === option.id}
-                        isCorrect={isCorrect && showFeedback}
-                        isError={!isCorrect && showFeedback && selectedAnswer === option.id}
-                        disabled={showFeedback && isCorrect}
-                        onClick={() => handleChoiceSelect(option.id)}
-                      />
-                    ))}
-                  </div>
-                )}
+              {/* Question */}
+              {currentStep.question && (
+                <div
+                  className="rounded-3xl p-5 border-2"
+                  style={{ background: '#F7F7F8', borderColor: '#E5E5E5', boxShadow: '0 3px 0 #E5E5E5' }}
+                >
+                  <p className="text-[20px] font-black" style={{ color: '#3C3C3C' }}>
+                    {currentStep.question}
+                  </p>
+                </div>
+              )}
 
-                {currentStep.type === 'segmenter' && (
-                  <div className="flex flex-col items-center gap-12">
-                    <Segmenter
-                      content={currentStep.content}
-                      onSegment={(segs) => setStepData(segs)}
+              {/* Options */}
+              {currentStep.type === 'multiple_choice' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {currentStep.options?.map((option) => (
+                    <ChoiceCard
+                      key={option.id}
+                      option={option}
+                      isSelected={selectedAnswer === option.id}
+                      showResult={showFeedback}
+                      isCorrect={showFeedback && option.isCorrect}
+                      isError={showFeedback && !isCorrect && selectedAnswer === option.id}
+                      disabled={showFeedback && isCorrect}
+                      onClick={() => handleChoiceSelect(option.id)}
                     />
-                    <button 
-                      onClick={() => setStepData(null)}
-                      className="flex items-center gap-2 text-[#AFAFAF] hover:text-[#555] font-black tracking-wide text-sm uppercase transition-colors"
-                    >
-                      <RotateCcw className="w-5 h-5 stroke-[3]" />
-                      Start over
-                    </button>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+
+              {currentStep.type === 'segmenter' && (
+                <div className="flex flex-col items-center gap-8">
+                  <Segmenter content={currentStep.content} onSegment={(segs) => setStepData(segs)} />
+                  <button
+                    onClick={() => setStepData(null)}
+                    className="flex items-center gap-2 font-extrabold text-[13px] uppercase tracking-wide transition-colors"
+                    style={{ color: '#AFAFAF' }}
+                  >
+                    <RotateCcw className="w-4 h-4" strokeWidth={3} />
+                    Start over
+                  </button>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
       </main>
 
-      <footer className="h-44 relative bg-white">
+      {/* Bottom action bar */}
+      <footer className="relative" style={{ minHeight: '140px' }}>
         <AnimatePresence>
           {!showFeedback ? (
-            <motion.div 
-              initial={{ y: 150 }}
+            <motion.div
+              initial={{ y: 120 }}
               animate={{ y: 0 }}
-              exit={{ y: 150 }}
-              className="absolute inset-0 px-6 py-8 border-t-[3px] border-[#E5E5E5] bg-white flex items-center justify-center"
+              exit={{ y: 120 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="absolute inset-0 flex items-center justify-between px-4 py-6"
+              style={{ background: 'white', borderTop: '3px solid #E5E5E5' }}
             >
-              <div className="max-w-4xl w-full flex justify-end">
+              <div className="max-w-3xl mx-auto w-full flex items-center justify-between">
+                {/* Prev button */}
                 <motion.button
-                  whileHover={currentStep.type === 'info' || selectedAnswer || stepData ? { scale: 1.05 } : {}}
-                  whileTap={currentStep.type === 'info' || selectedAnswer || stepData ? { scale: 0.95 } : {}}
-                  onClick={handleCheck}
-                  disabled={currentStep.type !== 'info' && !selectedAnswer && !stepData}
-                  className={`
-                    py-5 px-16 rounded-[20px] font-black text-white text-xl transition-all duration-75 uppercase tracking-wider
-                    ${(currentStep.type === 'info' || selectedAnswer || stepData)
-                      ? 'bg-[#1CB0F6] shadow-[0_5px_0_0_#1899D6] active:shadow-none active:translate-y-[5px]' 
-                      : 'bg-[#E5E5E5] text-[#AFAFAF] cursor-not-allowed'}
-                  `}
+                  whileTap={currentStepIndex > 0 ? { scale: 0.93, y: 3 } : {}}
+                  onClick={handlePrev}
+                  disabled={currentStepIndex === 0}
+                  className="flex items-center gap-2 px-6 py-4 rounded-2xl font-extrabold text-[15px] uppercase tracking-wider transition-all cursor-pointer"
+                  style={{
+                    background: currentStepIndex === 0 ? '#F7F7F8' : '#F7F7F8',
+                    color: currentStepIndex === 0 ? '#AFAFAF' : '#3C3C3C',
+                    boxShadow: currentStepIndex === 0 ? 'none' : '0 4px 0 #E5E5E5',
+                    borderBottom: currentStepIndex === 0 ? 'none' : '4px solid #E5E5E5',
+                    opacity: currentStepIndex === 0 ? 0.4 : 1,
+                    cursor: currentStepIndex === 0 ? 'not-allowed' : 'pointer',
+                  }}
                 >
-                  {currentStep.type === 'info' ? 'Continue' : 'Check'}
+                  <ChevronRight className="w-5 h-5 rotate-180" strokeWidth={3} />
+                  Back
+                </motion.button>
+
+                {/* Check / Continue button */}
+                <motion.button
+                  whileHover={canCheck ? { scale: 1.03 } : {}}
+                  whileTap={canCheck ? { scale: 0.94, y: 4 } : {}}
+                  onClick={handleCheck}
+                  disabled={!canCheck}
+                  className="px-12 py-4 rounded-2xl font-extrabold text-[18px] uppercase tracking-wider text-white transition-all"
+                  style={{
+                    background: canCheck ? '#58CC02' : '#E5E5E5',
+                    color: canCheck ? '#fff' : '#AFAFAF',
+                    boxShadow: canCheck ? '0 5px 0 #46A302' : 'none',
+                    borderBottom: canCheck ? '5px solid #46A302' : '5px solid transparent',
+                    cursor: canCheck ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {currentStep?.type === 'info' ? 'Continue' : 'Check'}
                 </motion.button>
               </div>
             </motion.div>
           ) : (
             <FeedbackPanel
               type={isCorrect ? 'success' : 'error'}
-              message={isCorrect ? "Correct!" : "That's not it."}
+              message={isCorrect ? 'Correct!' : "That's not it."}
               show={true}
               onContinue={handleContinue}
               onRetry={handleRetry}
@@ -336,7 +337,6 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
       </footer>
 
       <Confetti show={showConfetti} onComplete={() => setShowConfetti(false)} />
-      
       <UserFeedbackModal
         isOpen={showUserFeedback}
         onSubmit={handleUserFeedbackSubmit}
@@ -346,40 +346,48 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
   );
 }
 
-function ChoiceButton({ 
-  option, 
-  isSelected, 
-  isCorrect, 
-  isError, 
-  disabled, 
-  onClick 
-}: { 
-  option: QuizOption; 
+function ChoiceCard({
+  option,
+  isSelected,
+  showResult,
+  isCorrect,
+  isError,
+  disabled,
+  onClick,
+}: {
+  option: QuizOption;
   isSelected: boolean;
+  showResult: boolean;
   isCorrect: boolean;
   isError: boolean;
   disabled: boolean;
   onClick: () => void;
 }) {
+  let stateClass = 'choice-card';
+  if (isSelected && !showResult) stateClass += ' choice-card-selected';
+  if (isCorrect) stateClass += ' choice-card-correct';
+  if (isError) stateClass += ' choice-card-error';
+
   return (
     <motion.button
-      whileHover={!disabled ? { scale: 1.02 } : {}}
-      whileTap={!disabled ? { scale: 0.98 } : {}}
+      whileHover={!disabled ? { scale: 1.03 } : {}}
+      whileTap={!disabled ? { scale: 0.96, y: 3 } : {}}
       onClick={onClick}
       disabled={disabled}
-      className={`
-        relative p-6 rounded-[20px] border-[3px] text-left transition-all duration-75
-        ${isSelected 
-          ? isCorrect 
-            ? 'bg-[#D7FFB8] border-[#58CC02] text-[#58CC02]' 
-            : isError 
-              ? 'bg-[#FFDFE0] border-[#EA2B2B] text-[#EA2B2B]'
-              : 'bg-[#E1F5FE] border-[#1CB0F6] text-[#1CB0F6] shadow-[0_4px_0_0_#1899D6]' 
-          : 'bg-white border-[#E5E5E5] text-[#4B4B4B] hover:bg-[#F7F7F7] shadow-[0_4px_0_0_#E5E5E5]'}
-        ${disabled && isCorrect ? 'shadow-none' : ''}
-      `}
+      className={stateClass}
+      style={{
+        borderBottomWidth: isSelected && !showResult ? '4px' : undefined,
+        borderBottomColor: isSelected && !showResult ? '#1CB0F6' : undefined,
+        boxShadow: isCorrect
+          ? '0 4px 0 #46A302'
+          : isError
+          ? '0 4px 0 #D03B3B'
+          : isSelected
+          ? '0 4px 0 #1899D6'
+          : '0 4px 0 #E5E5E5',
+      }}
     >
-      <div className="text-[20px] font-bold">{option.text}</div>
+      <span className="text-[18px] font-extrabold">{option.text}</span>
     </motion.button>
   );
 }

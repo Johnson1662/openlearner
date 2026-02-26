@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BookOpen, Target, ArrowLeft, CheckCircle2, Play, Award } from 'lucide-react';
+import { BookOpen, ArrowLeft, CheckCircle2, Play, Award, Star, Lock } from 'lucide-react';
 import { Course, Level, Chapter } from '@/types';
 
 interface CourseDetailViewProps {
@@ -10,45 +10,50 @@ interface CourseDetailViewProps {
   onBack: () => void;
 }
 
-function LevelNode({
-  level,
-  onClick,
-  index
-}: {
-  level: Level;
-  onClick: () => void;
-  index: number;
-}) {
+function LevelNode({ level, onClick, index }: { level: Level; onClick: () => void; index: number }) {
   const isCompleted = level.status === 'completed';
+  const isLocked = level.status === 'locked';
 
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.7 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.04, duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={onClick}
+      transition={{ delay: index * 0.05, type: 'spring', stiffness: 220, damping: 18 }}
+      whileHover={!isLocked ? { scale: 1.1 } : {}}
+      whileTap={!isLocked ? { scale: 0.92 } : {}}
+      onClick={!isLocked ? onClick : undefined}
+      disabled={isLocked}
       className="flex flex-col items-center gap-2 cursor-pointer"
     >
+      {/* Node circle */}
       <div
-        className="w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300"
+        className="w-20 h-20 rounded-full flex items-center justify-center relative"
         style={{
-          background: isCompleted ? '#34C759' : '#007AFF',
+          background: isCompleted ? '#58CC02' : isLocked ? '#E5E5E5' : '#1CB0F6',
           boxShadow: isCompleted
-            ? '0 4px 14px rgba(52, 199, 89, 0.3), 0 0 0 3px #fff'
-            : '0 4px 14px rgba(0, 122, 255, 0.3), 0 0 0 3px #fff',
+            ? '0 5px 0 #46A302'
+            : isLocked
+            ? '0 5px 0 #C7C7C7'
+            : '0 5px 0 #1899D6',
+          border: '4px solid white',
+          outline: isCompleted
+            ? '3px solid #58CC02'
+            : isLocked
+            ? '3px solid #E5E5E5'
+            : '3px solid #1CB0F6',
         }}
       >
         {isCompleted ? (
-          <CheckCircle2 className="w-7 h-7" style={{ color: '#fff' }} />
+          <CheckCircle2 className="w-9 h-9" style={{ color: '#fff' }} />
+        ) : isLocked ? (
+          <Lock className="w-8 h-8" style={{ color: '#AFAFAF' }} />
         ) : (
-          <Play className="w-5 h-5 ml-0.5" style={{ color: '#fff', fill: '#fff' }} />
+          <Play className="w-7 h-7 ml-1" style={{ color: '#fff', fill: '#fff' }} />
         )}
       </div>
       <span
-        className="text-[12px] font-medium max-w-[110px] text-center line-clamp-2 leading-snug"
-        style={{ color: '#1d1d1f' }}
+        className="text-[12px] font-extrabold text-center max-w-[100px] leading-snug uppercase tracking-wide"
+        style={{ color: isLocked ? '#AFAFAF' : '#3C3C3C' }}
       >
         {level.title}
       </span>
@@ -56,81 +61,79 @@ function LevelNode({
   );
 }
 
-function ChapterDivider({ chapter, chapterIndex }: { chapter: Chapter; chapterIndex: number }) {
+function ChapterBanner({ chapter, idx }: { chapter: Chapter; idx: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: chapterIndex * 0.08, duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-      className="w-full max-w-sm rounded-xl py-3 px-5 text-center my-8"
-      style={{
-        background: '#F5F5F7',
-        border: '1px solid rgba(0,0,0,0.04)',
-      }}
+      transition={{ delay: idx * 0.08, duration: 0.4 }}
+      className="w-full rounded-3xl py-4 px-6 flex items-center gap-4 my-6"
+      style={{ background: '#1CB0F6', boxShadow: '0 5px 0 #1899D6' }}
     >
-      <div className="text-[11px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#007AFF' }}>
-        Chapter {chapterIndex + 1}
+      <div
+        className="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-[18px] text-white bg-white/20 flex-shrink-0"
+      >
+        {idx + 1}
       </div>
-      <div className="text-[15px] font-semibold" style={{ color: '#1d1d1f' }}>
-        {chapter.title}
+      <div>
+        <div className="text-[10px] font-extrabold uppercase tracking-widest text-white/70">
+          Chapter
+        </div>
+        <div className="text-[16px] font-black text-white">
+          {chapter.title}
+        </div>
       </div>
     </motion.div>
   );
 }
 
-function SnakePath({
-  levels,
-  chapters,
-  onSelectLevel
-}: {
-  levels: Level[];
-  chapters: Chapter[];
-  onSelectLevel: (level: Level) => void;
-}) {
-  const levelsByChapter: { [key: string]: Level[] } = {};
+function SnakePath({ levels, chapters, onSelectLevel }: { levels: Level[]; chapters: Chapter[]; onSelectLevel: (level: Level) => void }) {
+  const levelsByChapter: Record<string, Level[]> = {};
   chapters.forEach(ch => {
     levelsByChapter[ch.id] = levels.filter(l => ch.levelIds.includes(l.id));
   });
 
   let levelIndex = 0;
+  const COLS = 3;
 
   return (
-    <div className="flex flex-col items-center gap-10 relative">
+    <div className="flex flex-col items-center gap-4">
       {chapters.map((chapter, chapterIdx) => {
         const chapterLevels = levelsByChapter[chapter.id] || [];
-        const items: React.ReactNode[] = [];
-
-        items.push(<ChapterDivider key={`chapter-${chapter.id}`} chapter={chapter} chapterIndex={chapterIdx} />);
-
-        const levelsPerRow = 2;
         const rows: Level[][] = [];
-        for (let i = 0; i < chapterLevels.length; i += levelsPerRow) {
-          rows.push(chapterLevels.slice(i, i + levelsPerRow));
+        for (let i = 0; i < chapterLevels.length; i += COLS) {
+          rows.push(chapterLevels.slice(i, i + COLS));
         }
 
-        rows.forEach((row, rowIdx) => {
-          const isEvenRow = rowIdx % 2 === 0;
-          items.push(
-            <div
-              key={`row-${chapter.id}-${rowIdx}`}
-              className={`flex items-center justify-center gap-20 ${isEvenRow ? '' : 'flex-row-reverse'}`}
-            >
-              {row.map((level) => {
-                const idx = levelIndex++;
+        return (
+          <div key={chapter.id} className="w-full">
+            <ChapterBanner chapter={chapter} idx={chapterIdx} />
+            <div className="flex flex-col gap-8">
+              {rows.map((row, rowIdx) => {
+                const isReversed = rowIdx % 2 !== 0;
                 return (
-                  <LevelNode
-                    key={level.id}
-                    level={level}
-                    onClick={() => onSelectLevel(level)}
-                    index={idx}
-                  />
+                  <div
+                    key={`row-${rowIdx}`}
+                    className="flex items-center justify-center gap-10"
+                    style={{ flexDirection: isReversed ? 'row-reverse' : 'row' }}
+                  >
+                    {row.map((level) => {
+                      const idx = levelIndex++;
+                      return (
+                        <LevelNode
+                          key={level.id}
+                          level={level}
+                          onClick={() => onSelectLevel(level)}
+                          index={idx}
+                        />
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>
-          );
-        });
-
-        return items;
+          </div>
+        );
       })}
     </div>
   );
@@ -139,103 +142,89 @@ function SnakePath({
 export default function CourseDetailView({ course, onSelectLevel, onBack }: CourseDetailViewProps) {
   const totalLevels = course?.levels?.length || 0;
   const completedLevels = course?.levels?.filter((l: Level) => l.status === 'completed').length || 0;
-  const totalXP = course?.levels?.reduce((sum: number, l: Level) => sum + (l.xpReward || 0), 0) || 0;
+  const totalXP = course?.levels?.reduce((s: number, l: Level) => s + (l.xpReward || 0), 0) || 0;
 
   return (
-    <div
-      className="flex h-[calc(100vh-48px)] overflow-hidden"
-      style={{ background: '#FAFAFA' }}
-    >
-      {/* Left Panel - Course Info */}
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)]" style={{ background: '#F7F7F8' }}>
+      {/* Left Panel - sticky on desktop */}
       <div
-        className="w-2/5 flex flex-col items-center justify-start pt-12 px-8 overflow-y-auto"
-        style={{ borderRight: '1px solid rgba(0,0,0,0.06)' }}
+        className="md:sticky md:top-16 md:self-start w-full md:w-[300px] md:min-h-[calc(100vh-64px)] p-5 flex-shrink-0 overflow-y-auto"
+        style={{ borderRight: '2px solid #E5E5E5', background: '#FFFFFF' }}
       >
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: [0.32, 0.72, 0, 1] }}
-          className="max-w-sm w-full"
+          transition={{ duration: 0.4 }}
+          className="max-w-xs"
         >
           <motion.button
             whileHover={{ x: -3 }}
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onBack}
-            className="flex items-center gap-1.5 text-[13px] font-normal mb-8 transition-colors cursor-pointer"
-            style={{ color: '#007AFF' }}
+            className="flex items-center gap-1.5 mb-5 font-extrabold text-[13px] uppercase tracking-wider cursor-pointer"
+            style={{ color: '#1CB0F6' }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </motion.button>
 
+          {/* Course card */}
           <div
-            className="p-6 rounded-2xl"
-            style={{
-              background: '#fff',
-              border: '1px solid rgba(0,0,0,0.06)',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-            }}
+            className="rounded-3xl p-5 bg-white border-2 mb-5"
+            style={{ borderColor: '#E5E5E5', boxShadow: '0 4px 0 #E5E5E5' }}
           >
             <div
-              className="w-16 h-16 rounded-2xl mb-5 flex items-center justify-center text-3xl"
-              style={{ background: '#F5F5F7' }}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
+              style={{ background: '#F7F7F8', boxShadow: '0 3px 0 #E5E5E5' }}
             >
               {course?.icon || ''}
             </div>
 
-            <h1
-              className="text-[24px] font-bold tracking-tight mb-3 leading-snug"
-              style={{ color: '#1d1d1f' }}
-            >
+            <h1 className="text-[20px] font-black mb-2 leading-snug" style={{ color: '#3C3C3C' }}>
               {course?.title || 'Untitled'}
             </h1>
-
-            <p
-              className="text-[14px] leading-relaxed mb-5"
-              style={{ color: '#86868b' }}
-            >
+            <p className="text-[13px] font-semibold leading-relaxed mb-4" style={{ color: '#AFAFAF' }}>
               {course?.description || ''}
             </p>
 
-            <div className="flex flex-wrap gap-4 text-[12px] font-medium mb-5" style={{ color: '#86868b' }}>
-              <span className="flex items-center gap-1.5">
+            <div className="flex flex-wrap gap-3 text-[12px] font-extrabold uppercase mb-4" style={{ color: '#AFAFAF' }}>
+              <span className="flex items-center gap-1">
                 <BookOpen className="w-3.5 h-3.5" />
                 {course?.lessons || 0} lessons
               </span>
-              <span className="flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5" />
-                {course?.exercises || 0} exercises
+              <span className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5 fill-current" style={{ color: '#FFC800' }} />
+                {course?.exercises || 0}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5" style={{ color: '#FF9F0A' }} />
+              <span className="flex items-center gap-1">
+                <Award className="w-3.5 h-3.5" style={{ color: '#FFC800' }} />
                 {totalXP} XP
               </span>
             </div>
 
-            {/* Progress bar */}
+            {/* Progress */}
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: '#F5F5F7' }}>
+              <div className="flex-1 progress-bar-track">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${course?.progress || 0}%` }}
-                  className="h-full rounded-full"
-                  style={{ background: '#007AFF' }}
-                  transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
+                  className="progress-bar-fill"
+                  transition={{ duration: 0.8 }}
                 />
               </div>
-              <span className="text-[13px] font-semibold tabular-nums" style={{ color: '#007AFF' }}>
+              <span className="text-[14px] font-black" style={{ color: '#58CC02' }}>
                 {course?.progress || 0}%
               </span>
             </div>
-            <p className="text-[12px]" style={{ color: '#86868b' }}>
-              {completedLevels}/{totalLevels} levels completed
+            <p className="text-[12px] font-extrabold uppercase tracking-wide" style={{ color: '#AFAFAF' }}>
+              {completedLevels}/{totalLevels} levels
             </p>
           </div>
         </motion.div>
       </div>
 
       {/* Right Panel - Level Map */}
-      <div className="w-3/5 overflow-y-auto pt-12 pb-32 px-8">
+      <div className="flex-1 overflow-y-auto px-5 py-6 pb-28">
         {course?.chapters && course?.levels && (
           <SnakePath
             levels={course.levels}

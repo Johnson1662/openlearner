@@ -173,7 +173,7 @@ export default function Home() {
 
       <main
         className="min-h-screen"
-        style={{ background: '#FAFAFA' }}
+        style={{ background: '#FFFFFF' }}
       >
         {currentView !== 'learning' && (
           <Navbar

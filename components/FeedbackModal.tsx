@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { XCircle, Star, Sparkles, Trophy } from 'lucide-react';
+import { Trophy, Zap, Star } from 'lucide-react';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -15,133 +15,131 @@ export default function FeedbackModal({ isOpen, isCorrect, xpEarned, onClose }: 
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 z-50"
-            style={{
-              background: 'rgba(0, 0, 0, 0.3)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
+            style={{ background: 'rgba(0,0,0,0.4)' }}
           />
-          
+
+          {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.8, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50"
+            exit={{ opacity: 0, scale: 0.85, y: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-sm"
           >
             <div
-              className="p-8 text-center min-w-[320px] rounded-2xl"
+              className="rounded-3xl p-8 text-center border-2"
               style={{
-                background: '#fff',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
+                background: '#FFFFFF',
+                borderColor: isCorrect ? '#58CC02' : '#FF4B4B',
+                boxShadow: isCorrect ? '0 8px 0 #46A302' : '0 8px 0 #D03B3B',
               }}
             >
               {isCorrect ? (
                 <>
+                  {/* Trophy icon */}
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-                    className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center"
-                    style={{
-                      background: '#34C759',
-                      boxShadow: '0 8px 24px rgba(52, 199, 89, 0.3)',
-                    }}
+                    initial={{ scale: 0, rotate: -20 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.08 }}
+                    className="w-24 h-24 mx-auto mb-5 rounded-3xl flex items-center justify-center"
+                    style={{ background: '#FFC800', boxShadow: '0 6px 0 #D4A500' }}
                   >
-                    <Trophy className="w-8 h-8" style={{ color: '#fff' }} />
+                    <Trophy className="w-12 h-12" style={{ color: '#fff' }} />
                   </motion.div>
-                  
+
                   <motion.h2
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-[22px] font-bold mb-1"
-                    style={{ color: '#1d1d1f' }}
+                    transition={{ delay: 0.18 }}
+                    className="text-[28px] font-black mb-1"
+                    style={{ color: '#58CC02' }}
                   >
                     Excellent!
                   </motion.h2>
-                  
+
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-[15px] mb-5"
-                    style={{ color: '#86868b' }}
+                    transition={{ delay: 0.28 }}
+                    className="text-[15px] font-bold mb-5 uppercase tracking-wide"
+                    style={{ color: '#AFAFAF' }}
                   >
-                    You mastered this concept
+                    You nailed it
                   </motion.p>
 
+                  {/* XP badge */}
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 }}
-                    className="flex items-center justify-center gap-2 rounded-xl p-4 mb-6"
+                    transition={{ delay: 0.35, type: 'spring', stiffness: 300, damping: 20 }}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl mb-7"
                     style={{
-                      background: 'rgba(52, 199, 89, 0.08)',
-                      border: '1px solid rgba(52, 199, 89, 0.15)',
+                      background: '#FFF7D6',
+                      border: '2px solid #FFC800',
+                      boxShadow: '0 3px 0 #F0E0A0',
                     }}
                   >
-                    <Star className="w-5 h-5" style={{ color: '#FF9F0A', fill: '#FF9F0A' }} />
-                    <span className="text-[22px] font-bold" style={{ color: '#34C759' }}>
+                    <Star className="w-6 h-6 fill-current" style={{ color: '#FFC800' }} />
+                    <span className="text-[24px] font-black" style={{ color: '#D4A500' }}>
                       +{xpEarned} XP
                     </span>
-                    <Sparkles className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+                    <Zap className="w-5 h-5 fill-current" style={{ color: '#FFC800' }} />
                   </motion.div>
                 </>
               ) : (
                 <>
+                  {/* Sad icon */}
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-                    className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center"
-                    style={{
-                      background: '#FF3B30',
-                      boxShadow: '0 8px 24px rgba(255, 59, 48, 0.3)',
-                    }}
+                    initial={{ scale: 0, rotate: 15 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 16, delay: 0.08 }}
+                    className="w-24 h-24 mx-auto mb-5 rounded-3xl flex items-center justify-center text-6xl"
+                    style={{ background: '#FFDFE0', boxShadow: '0 6px 0 #FFBCBC' }}
                   >
-                    <XCircle className="w-8 h-8" style={{ color: '#fff' }} />
+                    <span>{'😬'}</span>
                   </motion.div>
-                  
+
                   <motion.h2
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-[22px] font-bold mb-1"
-                    style={{ color: '#1d1d1f' }}
+                    transition={{ delay: 0.18 }}
+                    className="text-[28px] font-black mb-1"
+                    style={{ color: '#FF4B4B' }}
                   >
                     Try Again
                   </motion.h2>
-                  
+
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-[15px] mb-6"
-                    style={{ color: '#86868b' }}
+                    transition={{ delay: 0.28 }}
+                    className="text-[15px] font-bold mb-7 uppercase tracking-wide"
+                    style={{ color: '#AFAFAF' }}
                   >
-                    Practice makes perfect. Keep going!
+                    Practice makes perfect
                   </motion.p>
                 </>
               )}
 
               <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: isCorrect ? 0.45 : 0.36 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.95, y: 4 }}
                 onClick={onClose}
-                className="w-full py-3 rounded-xl text-[15px] font-semibold cursor-pointer transition-all"
+                className="w-full py-4 rounded-2xl font-extrabold text-[17px] uppercase tracking-wider text-white cursor-pointer"
                 style={{
-                  background: '#007AFF',
-                  color: '#fff',
+                  background: isCorrect ? '#58CC02' : '#FF4B4B',
+                  boxShadow: isCorrect ? '0 5px 0 #46A302' : '0 5px 0 #D03B3B',
+                  borderBottom: isCorrect ? '5px solid #46A302' : '5px solid #D03B3B',
                 }}
               >
                 Continue
