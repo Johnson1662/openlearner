@@ -15,6 +15,13 @@ import { mockUserProgress } from '@/data/mockLevels';
 import { fetchUserData, fetchCourses, fetchCourseDetails, recordStudySession, updateProgress } from '@/lib/api';
 import { PageView, Level, UserProgress, Course } from '@/types';
 
+const pageTransition = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] },
+};
+
 export default function Home() {
   const [currentView, setCurrentView] = useState<PageView>('home');
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
@@ -26,10 +33,19 @@ export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [recentCourses, setRecentCourses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     loadUserData();
   }, []);
+
+  // Dismiss intro after data loads + minimum display time
+  useEffect(() => {
+    if (!isLoading) {
+      const timer = setTimeout(() => setShowIntro(false), 2400);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   const loadUserData = async () => {
     try {
@@ -97,7 +113,6 @@ export default function Home() {
     setShowFeedback(false);
     setActiveLevel(null);
     
-    // Reload course details to get updated level status
     if (activeCourse) {
       try {
         const courseDetails = await fetchCourseDetails(activeCourse.id);
@@ -151,100 +166,84 @@ export default function Home() {
     ]);
   }, []);
 
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   return (
-    <main className="min-h-screen bg-gray-50">
-      {currentView !== 'learning' && (
-        <Navbar
-          currentView={currentView}
-          onViewChange={handleViewChange}
-          progress={progress}
+    <>
+      {/* Apple-style intro animation overlay */}
+      {showIntro && <LoadingScreen />}
+
+      <main
+        className="min-h-screen"
+        style={{ background: '#FAFAFA' }}
+      >
+        {currentView !== 'learning' && (
+          <Navbar
+            currentView={currentView}
+            onViewChange={handleViewChange}
+            progress={progress}
+          />
+        )}
+
+        <AnimatePresence mode="wait">
+          {currentView === 'home' && (
+            <motion.div key="home" {...pageTransition}>
+              <HomeView
+                courses={courses}
+                recentCourses={recentCourses}
+                progress={progress}
+                onSelectCourse={handleSelectCourse}
+                onAddMaterial={handleAddMaterial}
+              />
+            </motion.div>
+          )}
+
+          {currentView === 'courses' && (
+            <motion.div key="courses" {...pageTransition}>
+              <CourseView
+                courses={courses}
+                onSelectCourse={handleSelectCourse}
+              />
+            </motion.div>
+          )}
+
+          {currentView === 'course-detail' && (
+            <motion.div key="course-detail" {...pageTransition}>
+              <CourseDetailView
+                course={activeCourse}
+                onSelectLevel={handleSelectLevel}
+                onBack={handleBackToCourses}
+              />
+            </motion.div>
+          )}
+
+          {currentView === 'learning' && activeLevel && (
+            <motion.div key="learning" {...pageTransition}>
+              <LevelView
+                level={activeLevel}
+                courseId={activeCourse?.id}
+                onComplete={handleLevelComplete}
+                onBack={handleBackToCourseDetail}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {currentView !== 'home' && (
+          <AIAssistant currentTopic={activeLevel?.title} />
+        )}
+
+        <FeedbackModal
+          isOpen={showFeedback}
+          isCorrect={isCorrect}
+          xpEarned={activeLevel?.xpReward || 0}
+          onClose={handleFeedbackClose}
         />
-      )}
 
-      <AnimatePresence mode="wait">
-        {currentView === 'home' && (
-          <motion.div
-            key="home"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <HomeView
-              courses={courses}
-              recentCourses={recentCourses}
-              progress={progress}
-              onSelectCourse={handleSelectCourse}
-              onAddMaterial={handleAddMaterial}
-            />
-          </motion.div>
-        )}
-
-        {currentView === 'courses' && (
-          <motion.div
-            key="courses"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <CourseView
-              courses={courses}
-              onSelectCourse={handleSelectCourse}
-            />
-          </motion.div>
-        )}
-
-        {currentView === 'course-detail' && (
-          <motion.div
-            key="course-detail"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <CourseDetailView
-              course={activeCourse}
-              onSelectLevel={handleSelectLevel}
-              onBack={handleBackToCourses}
-            />
-          </motion.div>
-        )}
-
-        {currentView === 'learning' && activeLevel && (
-          <motion.div
-            key="learning"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <LevelView
-              level={activeLevel}
-              courseId={activeCourse?.id}
-              onComplete={handleLevelComplete}
-              onBack={handleBackToCourseDetail}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {currentView !== 'home' && (
-        <AIAssistant currentTopic={activeLevel?.title} />
-      )}
-
-      <FeedbackModal
-        isOpen={showFeedback}
-        isCorrect={isCorrect}
-        xpEarned={activeLevel?.xpReward || 0}
-        onClose={handleFeedbackClose}
-      />
-
-      <CourseCreator
-        isOpen={showCourseCreator}
-        onClose={() => setShowCourseCreator(false)}
-        onCourseCreated={handleCourseCreated}
-      />
-    </main>
+        <CourseCreator
+          isOpen={showCourseCreator}
+          onClose={() => setShowCourseCreator(false)}
+          onCourseCreated={handleCourseCreated}
+        />
+      </main>
+    </>
   );
 }

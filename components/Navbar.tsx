@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Home, BookOpen, Zap, Target } from 'lucide-react';
+import { Home, BookOpen, Zap, Target, Menu, X } from 'lucide-react';
 import { PageView, UserProgress } from '@/types';
+import { useState } from 'react';
 
 interface NavbarProps {
   currentView: PageView;
@@ -11,53 +12,137 @@ interface NavbarProps {
 }
 
 export default function Navbar({ currentView, onViewChange, progress }: NavbarProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isActive = (view: PageView) => currentView === view;
 
+  const navItems: { view: PageView; label: string; match?: PageView[] }[] = [
+    { view: 'home', label: '首页' },
+    { view: 'courses', label: '课程', match: ['courses', 'course-detail'] },
+  ];
+
   return (
-    <nav className="flex items-center justify-between px-6 py-3 border-b border-gray-100 sticky top-0 bg-white z-50">
-      {/* Left - Logo & Navigation */}
-      <div className="flex items-center space-x-8">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="text-2xl font-bold tracking-tighter cursor-pointer"
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+      className="sticky top-0 z-50"
+      style={{
+        background: 'rgba(250, 250, 250, 0.72)',
+        backdropFilter: 'saturate(180%) blur(20px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+      }}
+    >
+      <div className="max-w-[980px] mx-auto px-6 flex items-center justify-between h-12">
+        {/* Logo */}
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={() => onViewChange('home')}
+          className="text-[17px] font-semibold tracking-tight cursor-pointer"
+          style={{ color: '#1d1d1f' }}
         >
           OpenLearner
-        </motion.div>
-        <div className="hidden md:flex space-x-6 text-gray-500 font-medium">
-          <motion.a
-            href="#"
-            onClick={(e) => { e.preventDefault(); onViewChange('home'); }}
-            className={`hover:text-black transition-colors ${isActive('home') ? 'text-black border-b-2 border-black pb-1' : ''}`}
+        </motion.button>
+
+        {/* Desktop Nav Links */}
+        <div className="hidden md:flex items-center gap-8">
+          {navItems.map((item) => {
+            const active = isActive(item.view) || (item.match?.includes(currentView) ?? false);
+            return (
+              <motion.button
+                key={item.view}
+                onClick={() => onViewChange(item.view)}
+                whileTap={{ scale: 0.97 }}
+                className="text-[13px] font-normal transition-colors duration-200 cursor-pointer relative py-1"
+                style={{ color: active ? '#1d1d1f' : '#6e6e73' }}
+              >
+                {item.label}
+                {active && (
+                  <motion.div
+                    layoutId="activeNav"
+                    className="absolute -bottom-[1px] left-0 right-0 h-[1.5px] rounded-full"
+                    style={{ background: '#1d1d1f' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Right side - Stats */}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-4 text-[13px]">
+            <span
+              className="flex items-center gap-1 font-medium"
+              style={{ color: '#6e6e73' }}
+            >
+              <Target className="w-3.5 h-3.5" style={{ color: '#007AFF' }} />
+              {progress?.completedLevels?.length ?? 0}
+            </span>
+            <span
+              className="flex items-center gap-1 font-medium"
+              style={{ color: '#6e6e73' }}
+            >
+              <Zap className="w-3.5 h-3.5" style={{ color: '#FF9F0A', fill: '#FF9F0A' }} />
+              {progress?.currentStreak ?? 0}
+            </span>
+          </div>
+
+          {/* Mobile menu */}
+          <button
+            className="md:hidden p-1 -mr-1 cursor-pointer"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            首页
-          </motion.a>
-          <motion.a
-            href="#"
-            onClick={(e) => { e.preventDefault(); onViewChange('courses'); }}
-            className={`hover:text-black transition-colors ${(isActive('courses') || isActive('course-detail')) ? 'text-black border-b-2 border-black pb-1' : ''}`}
-          >
-            课程
-          </motion.a>
+            {mobileMenuOpen ? (
+              <X className="w-5 h-5" style={{ color: '#1d1d1f' }} />
+            ) : (
+              <Menu className="w-5 h-5" style={{ color: '#1d1d1f' }} />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Right - Stats & Menu */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2 font-bold">
-          <span className="flex items-center gap-1">
-            <Target className="w-4 h-4 text-indigo-600" />
-            {progress?.completedLevels?.length ?? 0}
-          </span>
-          <span className="text-yellow-500 flex items-center gap-1">
-            <Zap className="w-4 h-4 fill-yellow-500" />
-            {progress?.currentStreak ?? 0}
-          </span>
-        </div>
-        <div className="text-xl cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition-colors">
-          ☰
-        </div>
-      </div>
-    </nav>
+      {/* Mobile dropdown */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="md:hidden px-6 pb-4"
+          style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}
+        >
+          {navItems.map((item) => {
+            const active = isActive(item.view) || (item.match?.includes(currentView) ?? false);
+            return (
+              <button
+                key={item.view}
+                onClick={() => {
+                  onViewChange(item.view);
+                  setMobileMenuOpen(false);
+                }}
+                className="block w-full text-left py-2.5 text-[15px] cursor-pointer transition-colors"
+                style={{
+                  color: active ? '#1d1d1f' : '#6e6e73',
+                  fontWeight: active ? 600 : 400,
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+          <div className="flex items-center gap-4 pt-2 text-[13px]" style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+            <span className="flex items-center gap-1 font-medium py-2" style={{ color: '#6e6e73' }}>
+              <Target className="w-3.5 h-3.5" style={{ color: '#007AFF' }} />
+              {progress?.completedLevels?.length ?? 0} 完成
+            </span>
+            <span className="flex items-center gap-1 font-medium py-2" style={{ color: '#6e6e73' }}>
+              <Zap className="w-3.5 h-3.5" style={{ color: '#FF9F0A', fill: '#FF9F0A' }} />
+              {progress?.currentStreak ?? 0} 连续
+            </span>
+          </div>
+        </motion.div>
+      )}
+    </motion.nav>
   );
 }
