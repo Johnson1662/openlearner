@@ -197,9 +197,15 @@ export function MicroButton({
 }: MicroButtonProps) {
   const baseStyles = 'px-6 py-3 rounded-xl font-semibold transition-all duration-200';
   const variants = {
-    primary: 'bg-indigo-500 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-600 hover:shadow-indigo-300',
-    secondary: 'bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50',
-    ghost: 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+    primary: 'text-white font-extrabold uppercase tracking-wider',
+    secondary: 'border-2 font-extrabold uppercase tracking-wider',
+    ghost: 'font-semibold',
+  };
+
+  const variantStyles: Record<string, React.CSSProperties> = {
+    primary: { background: '#58CC02', boxShadow: '0 4px 0 #46A302', border: '2px solid #46A302', color: '#fff' },
+    secondary: { background: '#F7F7F8', borderColor: '#E5E5E5', boxShadow: '0 4px 0 #E5E5E5', color: '#AFAFAF' },
+    ghost: { color: '#AFAFAF' },
   };
 
   return (
@@ -209,10 +215,12 @@ export function MicroButton({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.95 }}
       className={`${baseStyles} ${variants[variant]} ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+      style={variantStyles[variant]}
     >
       {isLoading ? (
         <motion.div
-          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+          className="w-5 h-5 rounded-full border-2 border-t-transparent"
+          style={{ borderColor: 'currentColor', borderTopColor: 'transparent' }}
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
         />

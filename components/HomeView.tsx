@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Plus, ChevronRight, Star, BookOpen, Zap } from 'lucide-react';
 import { Course, UserProgress, RecentCourse } from '@/types';
@@ -21,8 +21,15 @@ const fadeUp = {
 };
 
 export default function HomeView({ courses, recentCourses, progress, onSelectCourse, onAddMaterial }: HomeViewProps) {
-  const [selectedCourse, setSelectedCourse] = useState<Course>(courses[0] || {} as Course);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(courses[0] || null);
   const streakDays = getStreakDays(progress.currentStreak, progress.lastStudyDate);
+
+  // When courses load asynchronously, set the first course as selected if none is selected yet
+  useEffect(() => {
+    if (!selectedCourse && courses.length > 0) {
+      setSelectedCourse(courses[0]);
+    }
+  }, [courses, selectedCourse]);
 
   return (
     <div className="min-h-screen" style={{ background: '#F7F7F8' }}>
@@ -121,7 +128,7 @@ export default function HomeView({ courses, recentCourses, progress, onSelectCou
           </motion.div>
 
           {/* Featured Course */}
-          {selectedCourse?.id && (
+          {selectedCourse && (
             <motion.div
               variants={fadeUp}
               whileHover={{ y: -3 }}
@@ -206,7 +213,7 @@ export default function HomeView({ courses, recentCourses, progress, onSelectCou
                     key={course.id}
                     course={course}
                     index={i}
-                    isSelected={selectedCourse?.id === course.id}
+                  isSelected={selectedCourse?.id === course.id}
                     onSelect={() => {
                       setSelectedCourse(course);
                       onSelectCourse(course);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Sparkles, Loader2, BookOpen, CheckCircle } from 'lucide-react';
+import { X, Sparkles, Loader2, BookOpen, CheckCircle } from 'lucide-react';
 import { generateCourse } from '@/lib/api';
 import { Course } from '@/types';
 
@@ -25,10 +25,8 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
       setError('学习材料至少需要50个字符');
       return;
     }
-
     setStep('generating');
     setError('');
-
     try {
       const result = await generateCourse(material, title || undefined, difficulty);
       setGeneratedCourse(result.data.course);
@@ -56,12 +54,15 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
     setError('');
   };
 
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
+  const handleClose = () => { reset(); onClose(); };
 
   if (!isOpen) return null;
+
+  const difficultyOptions = [
+    { value: 'beginner', label: '初级' },
+    { value: 'intermediate', label: '中级' },
+    { value: 'advanced', label: '高级' },
+  ] as const;
 
   return (
     <AnimatePresence>
@@ -69,93 +70,107 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ background: 'rgba(0,0,0,0.5)' }}
         onClick={handleClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl"
+          className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden border-2"
+          style={{ borderColor: '#E5E5E5', boxShadow: '0 8px 0 #E5E5E5' }}
           onClick={e => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b-2" style={{ borderColor: '#E5E5E5' }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-indigo-600" />
+              <div
+                className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                style={{ background: '#FFF7D6', boxShadow: '0 3px 0 #F0E0A0' }}
+              >
+                <Sparkles className="w-5 h-5" style={{ color: '#FFC800' }} />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">AI 创建课程</h2>
+              <h2 className="text-xl font-black" style={{ color: '#3C3C3C' }}>AI 创建课程</h2>
             </div>
             <button
               onClick={handleClose}
-              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer"
+              style={{ background: '#F7F7F8' }}
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4" style={{ color: '#AFAFAF' }} />
             </button>
           </div>
 
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
             {step === 'input' && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
-              >
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
+                {/* Title */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    课程标题 <span className="text-gray-400 font-normal">(可选)</span>
+                  <label className="block text-sm font-extrabold uppercase tracking-wide mb-2" style={{ color: '#3C3C3C' }}>
+                    课程标题 <span className="font-semibold normal-case tracking-normal" style={{ color: '#AFAFAF' }}>(可选)</span>
                   </label>
                   <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={e => setTitle(e.target.value)}
                     placeholder="例如：Python编程入门"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-2xl border-2 font-semibold focus:outline-none transition-all"
+                    style={{ borderColor: '#E5E5E5', color: '#3C3C3C' }}
+                    onFocus={e => (e.target.style.borderColor = '#1CB0F6')}
+                    onBlur={e => (e.target.style.borderColor = '#E5E5E5')}
                   />
                 </div>
 
+                {/* Difficulty */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-extrabold uppercase tracking-wide mb-2" style={{ color: '#3C3C3C' }}>
                     难度级别
                   </label>
                   <div className="flex gap-3">
-                    {(['beginner', 'intermediate', 'advanced'] as const).map((level) => (
+                    {difficultyOptions.map(opt => (
                       <button
-                        key={level}
-                        onClick={() => setDifficulty(level)}
-                        className={`flex-1 py-2 px-4 rounded-xl font-medium transition-all ${
-                          difficulty === level
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
+                        key={opt.value}
+                        onClick={() => setDifficulty(opt.value)}
+                        className="flex-1 py-3 rounded-2xl font-extrabold text-sm uppercase tracking-wider transition-all cursor-pointer border-2"
+                        style={
+                          difficulty === opt.value
+                            ? { background: '#58CC02', color: '#fff', borderColor: '#46A302', boxShadow: '0 3px 0 #46A302' }
+                            : { background: '#F7F7F8', color: '#AFAFAF', borderColor: '#E5E5E5', boxShadow: '0 3px 0 #E5E5E5' }
+                        }
                       >
-                        {level === 'beginner' ? '初级' : level === 'intermediate' ? '中级' : '高级'}
+                        {opt.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Material */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    学习材料 <span className="text-red-500">*</span>
+                  <label className="block text-sm font-extrabold uppercase tracking-wide mb-2" style={{ color: '#3C3C3C' }}>
+                    学习材料 <span style={{ color: '#FF4B4B' }}>*</span>
                   </label>
                   <textarea
                     value={material}
-                    onChange={(e) => setMaterial(e.target.value)}
-                    placeholder="粘贴你的学习材料，例如：&#10;- 教科书章节&#10;- 技术文档&#10;- 笔记和知识点&#10;- 任何你想学习的内容&#10;&#10;材料越长，生成的课程越完整..."
+                    onChange={e => setMaterial(e.target.value)}
+                    placeholder="粘贴你的学习材料，例如：&#10;- 教科书章节&#10;- 技术文档&#10;- 笔记和知识点"
                     rows={10}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-2xl border-2 font-semibold focus:outline-none transition-all resize-none"
+                    style={{ borderColor: '#E5E5E5', color: '#3C3C3C' }}
+                    onFocus={e => (e.target.style.borderColor = '#1CB0F6')}
+                    onBlur={e => (e.target.style.borderColor = '#E5E5E5')}
                   />
-                  <p className="text-xs text-gray-500 mt-2">
-                    已输入 {material.length} 字符 (最少需要 50 字符)
+                  <p className="text-xs font-extrabold uppercase tracking-wide mt-2" style={{ color: '#AFAFAF' }}>
+                    已输入 {material.length} 字符（最少需要 50 字符）
                   </p>
                 </div>
 
                 {error && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-red-50 text-red-600 rounded-xl text-sm"
+                    className="p-4 rounded-2xl border-2 text-sm font-bold"
+                    style={{ background: '#FFF0F0', borderColor: '#FF4B4B', color: '#FF4B4B' }}
                   >
                     {error}
                   </motion.div>
@@ -163,10 +178,15 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.97, y: 3 }}
                   onClick={handleSubmit}
                   disabled={material.trim().length < 50}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-2xl font-black text-base uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: '#FFC800',
+                    boxShadow: '0 5px 0 #D4A500',
+                    border: '2px solid #D4A500',
+                  }}
                 >
                   <Sparkles className="w-5 h-5" />
                   生成课程
@@ -175,72 +195,72 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
             )}
 
             {step === 'generating' && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="py-20 text-center"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 text-center">
                 <div className="relative w-20 h-20 mx-auto mb-6">
                   <motion.div
-                    className="absolute inset-0 rounded-full border-4 border-indigo-100"
+                    className="absolute inset-0 rounded-full border-4"
+                    style={{ borderColor: '#E5E5E5' }}
                   />
                   <motion.div
-                    className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent"
+                    className="absolute inset-0 rounded-full border-4 border-t-transparent"
+                    style={{ borderColor: '#58CC02' }}
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   />
-                  <Loader2 className="absolute inset-0 m-auto w-8 h-8 text-indigo-600 animate-spin" />
+                  <Loader2 className="absolute inset-0 m-auto w-8 h-8 animate-spin" style={{ color: '#58CC02' }} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">AI 正在生成课程...</h3>
-                <p className="text-gray-500">这可能需要 30-60 秒，请稍候</p>
+                <h3 className="text-xl font-black mb-2" style={{ color: '#3C3C3C' }}>AI 正在生成课程...</h3>
+                <p className="font-semibold" style={{ color: '#AFAFAF' }}>这可能需要 30–60 秒，请稍候</p>
               </motion.div>
             )}
 
             {step === 'preview' && generatedCourse && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
-              >
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6">
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col gap-5">
+                {/* Course preview card */}
+                <div className="rounded-3xl p-6 border-2" style={{ background: '#F7F7F8', borderColor: '#E5E5E5' }}>
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center text-3xl shadow-sm">
+                    <div
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+                      style={{ background: '#fff', boxShadow: '0 3px 0 #E5E5E5' }}
+                    >
                       {generatedCourse.icon}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">{generatedCourse.title}</h3>
-                      <p className="text-gray-600 text-sm">{generatedCourse.description}</p>
+                      <h3 className="text-xl font-black" style={{ color: '#3C3C3C' }}>{generatedCourse.title}</h3>
+                      <p className="text-sm font-semibold" style={{ color: '#AFAFAF' }}>{generatedCourse.description}</p>
                     </div>
                   </div>
-                  <div className="flex gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex gap-5 text-sm font-extrabold uppercase tracking-wide" style={{ color: '#AFAFAF' }}>
+                    <span className="flex items-center gap-1.5">
                       <BookOpen className="w-4 h-4" />
-                      <span>{generatedCourse.chapters?.length || 0} 个章节</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{generatedCourse.levels?.length || 0} 个关卡</span>
-                    </div>
+                      {generatedCourse.chapters?.length || 0} 个章节
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4" style={{ color: '#58CC02' }} />
+                      {generatedCourse.levels?.length || 0} 个关卡
+                    </span>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900">章节预览</h4>
+                {/* Chapter list */}
+                <div className="flex flex-col gap-3">
+                  <h4 className="font-black uppercase tracking-wide text-sm" style={{ color: '#3C3C3C' }}>章节预览</h4>
                   {generatedCourse.chapters?.slice(0, 3).map((chapter, idx) => (
-                    <div key={chapter.id} className="p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 text-sm font-bold flex items-center justify-center">
-                          {idx + 1}
-                        </span>
-                        <div>
-                          <p className="font-medium text-gray-900">{chapter.title}</p>
-                          <p className="text-sm text-gray-500">{chapter.description}</p>
-                        </div>
+                    <div key={chapter.id || idx} className="p-4 rounded-2xl border-2 flex items-center gap-3" style={{ borderColor: '#E5E5E5' }}>
+                      <span
+                        className="w-7 h-7 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
+                        style={{ background: '#DDF4FF', color: '#1CB0F6' }}
+                      >
+                        {idx + 1}
+                      </span>
+                      <div>
+                        <p className="font-extrabold text-sm" style={{ color: '#3C3C3C' }}>{chapter.title}</p>
+                        <p className="text-xs font-semibold" style={{ color: '#AFAFAF' }}>{chapter.description}</p>
                       </div>
                     </div>
                   ))}
                   {(generatedCourse.chapters?.length || 0) > 3 && (
-                    <p className="text-sm text-gray-500 text-center">
+                    <p className="text-sm font-bold text-center" style={{ color: '#AFAFAF' }}>
                       还有 {generatedCourse.chapters!.length - 3} 个章节...
                     </p>
                   )}
@@ -249,15 +269,17 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
                 <div className="flex gap-3">
                   <button
                     onClick={() => setStep('input')}
-                    className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                    className="flex-1 py-4 rounded-2xl font-extrabold border-2 uppercase tracking-wider cursor-pointer"
+                    style={{ background: '#F7F7F8', color: '#AFAFAF', borderColor: '#E5E5E5', boxShadow: '0 4px 0 #E5E5E5' }}
                   >
                     重新编辑
                   </button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.97, y: 3 }}
                     onClick={handleConfirm}
-                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    className="flex-1 py-4 rounded-2xl font-black uppercase tracking-wider text-white cursor-pointer"
+                    style={{ background: '#58CC02', boxShadow: '0 4px 0 #46A302', border: '2px solid #46A302' }}
                   >
                     确认创建
                   </motion.button>

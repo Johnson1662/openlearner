@@ -4,12 +4,15 @@ import { AnthropicProvider } from './anthropic';
 import { AzureOpenAIProvider } from './azure';
 import { GenericOpenAIProvider } from './generic';
 import { SparkProvider } from './spark';
+import { VercelGatewayProvider } from './vercel-gateway';
 
 export class AIProviderFactory {
   private static providers: Map<string, AIProvider> = new Map();
 
   static getProvider(): AIProvider {
-    const providerType = process.env.AI_PROVIDER?.toLowerCase() || 'openai';
+    // Default to 'vercel' so it works zero-config in the sandbox.
+    // Set AI_PROVIDER env var to override (openai, anthropic, azure, spark, generic).
+    const providerType = process.env.AI_PROVIDER?.toLowerCase() || 'vercel';
 
     if (this.providers.has(providerType)) {
       return this.providers.get(providerType)!;
@@ -40,8 +43,12 @@ export class AIProviderFactory {
         break;
 
       case 'openai':
-      default:
         provider = new OpenAIProvider();
+        break;
+
+      case 'vercel':
+      default:
+        provider = new VercelGatewayProvider();
         break;
     }
 
@@ -51,6 +58,7 @@ export class AIProviderFactory {
 
   static getAvailableProviders(): string[] {
     const providers = [
+      { name: 'Vercel AI Gateway (default)', available: new VercelGatewayProvider().isAvailable() },
       { name: 'OpenAI', available: new OpenAIProvider().isAvailable() },
       { name: 'Anthropic (Claude)', available: new AnthropicProvider().isAvailable() },
       { name: 'Azure OpenAI', available: new AzureOpenAIProvider().isAvailable() },
