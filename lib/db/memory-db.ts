@@ -1,22 +1,12 @@
 import { Course, Chapter, Level, UserProgress, StudyRecord } from '@/types';
-import {
-  getOrCreateUser as sqliteGetUser,
-  updateUserProgress as sqliteUpdateProgress,
-  saveCourse as sqliteSaveCourse,
-  getCourseWithDetails as sqliteGetCourse,
-  getAllCourses as sqliteGetAllCourses,
-  saveCourseMaterial as sqliteSaveMaterial,
-  getCourseMaterial as sqliteGetMaterial,
-  saveLevelContent as sqliteSaveLevelContent,
-  getLevelContent as sqliteGetLevelContent,
-  updateLevelStatus as sqliteUpdateLevelStatus,
-  getUserProgress as sqliteGetUserProgress,
-  recordStudySession as sqliteRecordStudy,
-  hasStudiedToday as sqliteHasStudied,
-  getStudyStats as sqliteGetStats,
-} from './sqlite';
 
-const USE_SQLITE = process.env.USE_SQLITE !== 'false';
+const USE_SQLITE = process.env.USE_SQLITE === 'true';
+
+// Lazy-load sqlite module only when USE_SQLITE is true to avoid native binding errors
+function getSqlite() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('./sqlite');
+}
 
 interface MemoryDB {
   users: Map<string, any>;
@@ -125,7 +115,7 @@ export function initDatabase() {
 
 export function getOrCreateUser(userId: string = 'user-1') {
   if (USE_SQLITE) {
-    return sqliteGetUser(userId);
+    return getSqlite().getOrCreateUser(userId);
   }
   if (!memoryDB.users.has(userId)) {
     memoryDB.users.set(userId, {
@@ -145,7 +135,7 @@ export function updateUserProgress(
   updates: { totalXP?: number; currentStreak?: number; energy?: number; lastStudyDate?: string }
 ) {
   if (USE_SQLITE) {
-    return sqliteUpdateProgress(userId, updates);
+    return getSqlite().updateUserProgress(userId, updates);
   }
   const user = getOrCreateUser(userId);
   if (updates.totalXP !== undefined) user.total_xp = updates.totalXP;
@@ -163,8 +153,8 @@ export function recordStudySession(
   xpEarned: number
 ) {
   if (USE_SQLITE) {
-    sqliteRecordStudy(userId, courseId, levelId, duration, xpEarned);
-    const user = sqliteGetUser(userId);
+    getSqlite().recordStudySession(userId, courseId, levelId, duration, xpEarned);
+    const user = getSqlite().getOrCreateUser(userId);
     const lastStudyDate = user.last_study_date;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -179,7 +169,7 @@ export function recordStudySession(
       newStreak = 1;
     }
     
-    sqliteUpdateProgress(userId, {
+    getSqlite().updateUserProgress(userId, {
       totalXP: user.total_xp + xpEarned,
       currentStreak: newStreak,
       lastStudyDate: today,
@@ -226,7 +216,7 @@ export function recordStudySession(
 
 export function hasStudiedToday(userId: string): boolean {
   if (USE_SQLITE) {
-    return sqliteHasStudied(userId);
+    return getSqlite().hasStudiedToday(userId);
   }
   const today = new Date().toISOString().split('T')[0];
   for (const record of memoryDB.studyRecords.values()) {
@@ -239,7 +229,7 @@ export function hasStudiedToday(userId: string): boolean {
 
 export function getStudyStats(userId: string) {
   if (USE_SQLITE) {
-    return sqliteGetStats(userId);
+    return getSqlite().getStudyStats(userId);
   }
   const today = new Date().toISOString().split('T')[0];
   let todayDuration = 0;
@@ -271,7 +261,7 @@ export function getStudyStats(userId: string) {
 
 export function saveCourse(course: Course, chapters: Chapter[], levels: Level[]) {
   if (USE_SQLITE) {
-    return sqliteSaveCourse(course, chapters, levels);
+    return getSqlite().saveCourse(course, chapters, levels);
   }
   memoryDB.courses.set(course.id, {
     id: course.id,
@@ -328,7 +318,7 @@ export function saveCourse(course: Course, chapters: Chapter[], levels: Level[])
 
 export function getCourseWithDetails(courseId: string, userId: string = 'user-1') {
   if (USE_SQLITE) {
-    return sqliteGetCourse(courseId, userId);
+    return getSqlite().getCourseWithDetails(courseId, userId);
   }
   const course = memoryDB.courses.get(courseId);
   if (!course) return null;
@@ -385,7 +375,7 @@ export function getCourseWithDetails(courseId: string, userId: string = 'user-1'
 
 export function getAllCourses(): any[] {
   if (USE_SQLITE) {
-    return sqliteGetAllCourses();
+    return getSqlite().getAllCourses();
   }
   return Array.from(memoryDB.courses.values()).sort((a, b) => {
     const dateA = a.last_accessed_at ? new Date(a.last_accessed_at) : new Date(0);
@@ -396,7 +386,7 @@ export function getAllCourses(): any[] {
 
 export function updateLevelStatus(userId: string, courseId: string, levelId: string, status: string) {
   if (USE_SQLITE) {
-    return sqliteUpdateLevelStatus(userId, courseId, levelId, status);
+    return getSqlite().updateLevelStatus(userId, courseId, levelId, status);
   }
   const id = `progress-${userId}-${levelId}`;
   memoryDB.userProgress.set(id, {
@@ -411,7 +401,7 @@ export function updateLevelStatus(userId: string, courseId: string, levelId: str
 
 export function getUserProgress(userId: string, courseId: string): string[] {
   if (USE_SQLITE) {
-    return sqliteGetUserProgress(userId, courseId);
+    return getSqlite().getUserProgress(userId, courseId);
   }
   const completed: string[] = [];
   for (const progress of memoryDB.userProgress.values()) {
@@ -424,21 +414,21 @@ export function getUserProgress(userId: string, courseId: string): string[] {
 
 export function saveCourseMaterial(courseId: string, material: string) {
   if (USE_SQLITE) {
-    return sqliteSaveMaterial(courseId, material);
+    return getSqlite().saveCourseMaterial(courseId, material);
   }
   memoryDB.courseMaterials.set(courseId, material);
 }
 
 export function getCourseMaterial(courseId: string): string | undefined {
   if (USE_SQLITE) {
-    return sqliteGetMaterial(courseId);
+    return getSqlite().getCourseMaterial(courseId);
   }
   return memoryDB.courseMaterials.get(courseId);
 }
 
 export function saveLevelContent(levelId: string, steps: any[]) {
   if (USE_SQLITE) {
-    return sqliteSaveLevelContent(levelId, steps);
+    return getSqlite().saveLevelContent(levelId, steps);
   }
   memoryDB.levelContentCache.set(levelId, {
     steps,
@@ -448,7 +438,7 @@ export function saveLevelContent(levelId: string, steps: any[]) {
 
 export function getLevelContent(levelId: string): { steps: any[]; timestamp: number } | undefined {
   if (USE_SQLITE) {
-    return sqliteGetLevelContent(levelId);
+    return getSqlite().getLevelContent(levelId);
   }
   return memoryDB.levelContentCache.get(levelId);
 }
