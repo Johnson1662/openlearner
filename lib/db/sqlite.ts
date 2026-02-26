@@ -170,6 +170,10 @@ export function getCourseWithDetails(courseId: string, userId: string = 'user-1'
   `).all(userId, courseId) as any[];
   const completedLevelIds = new Set(completedLevels.map(r => r.level_id));
   
+  const totalLevels = levels.length;
+  const completedCount = completedLevelIds.size;
+  const progress = totalLevels > 0 ? Math.round((completedCount / totalLevels) * 100) : 0;
+  
   // Map levelIds to chapters
   const chaptersWithLevelIds = chapters.map(ch => ({
     ...ch,
@@ -180,7 +184,7 @@ export function getCourseWithDetails(courseId: string, userId: string = 'user-1'
   }));
 
   return {
-    course: { ...course, coverImage: course.cover_image },
+    course: { ...course, coverImage: course.cover_image, progress },
     chapters: chaptersWithLevelIds,
     levels: levels.map(lvl => ({ 
       ...lvl, 
