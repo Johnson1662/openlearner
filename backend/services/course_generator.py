@@ -48,6 +48,9 @@ class CourseGenerator:
         system_prompt = """你是一个课程设计专家。根据用户需求和材料生成个性化的课程大纲。
 只输出有效JSON，不要输出其他内容。"""
         
+        newline = chr(10)
+        knowledge_section = f"参考知识库内容:{newline}{knowledge_context}" if knowledge_context else ""
+
         user_prompt = f"""请根据以下信息生成课程大纲：
 
 {title if title else "请根据内容自动生成标题"}
@@ -55,7 +58,7 @@ class CourseGenerator:
 学习材料:
 {material[:3000]}
 
-{f"参考知识库内容:\n{knowledge_context}" if knowledge_context else ""}
+{knowledge_section}
 
 用户基础: {foundation_text.get(foundation, foundation_text["beginner"])}
 学习目标: {goal_text.get(goal, goal_text["interest"])}
