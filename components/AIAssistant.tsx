@@ -71,8 +71,8 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
         className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center z-40 cursor-pointer text-white"
         style={{
           background: '#8257E5',
-          boxShadow: '0 5px 0 #1899D6',
-          border: '2px solid #1899D6',
+          boxShadow: '0 5px 0 #6B47C6',
+          border: '2px solid #6B47C6',
         }}
       >
         <MessageCircle className="w-6 h-6" />
@@ -92,7 +92,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
               <div className="flex items-center gap-3">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: '#DDF4FF', boxShadow: '0 2px 0 #D4C5F5' }}
+                  style={{ background: '#D4C5F5', boxShadow: '0 2px 0 #D4C5F5' }}
                 >
                   <Bot className="w-5 h-5" style={{ color: '#8257E5' }} />
                 </div>
@@ -152,7 +152,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
 
             {/* Current topic badge */}
             {currentTopic && (
-              <div className="px-4 py-2 border-t-2" style={{ borderColor: '#E5E5E5', background: '#DDF4FF' }}>
+              <div className="px-4 py-2 border-t-2" style={{ borderColor: '#E5E5E5', background: '#D4C5F5' }}>
                 <p className="text-xs font-extrabold flex items-center gap-1.5" style={{ color: '#8257E5' }}>
                   <Sparkles className="w-3 h-3" />
                   当前学习：{currentTopic}
@@ -181,7 +181,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
                   whileTap={{ scale: 0.93, y: 2 }}
                   onClick={handleSend}
                   className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer text-white flex-shrink-0"
-                  style={{ background: '#8257E5', boxShadow: '0 3px 0 #1899D6' }}
+                  style={{ background: '#8257E5', boxShadow: '0 3px 0 #6B47C6' }}
                 >
                   <Send className="w-4 h-4" />
                 </motion.button>

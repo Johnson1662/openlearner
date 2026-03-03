@@ -128,8 +128,6 @@ export default function HomeView({ courses, recentCourses, progress, onSelectCou
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }
-

@@ -208,7 +208,7 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
               {/* Step label */}
               <div
                 className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-xl font-extrabold text-[12px] uppercase tracking-widest"
-                style={{ background: '#DDF4FF', color: '#8257E5', boxShadow: '0 2px 0 #D4C5F5' }}
+                style={{ background: '#D4C5F5', color: '#8257E5', boxShadow: '0 2px 0 #D4C5F5' }}
               >
                 Step {currentStepIndex + 1} / {levelSteps.length}
               </div>

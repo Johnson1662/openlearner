@@ -29,18 +29,18 @@ function LevelNode({ level, onClick, index }: { level: Level; onClick: () => voi
       <div
         className="w-20 h-20 rounded-full flex items-center justify-center relative"
         style={{
-          background: isCompleted ? '#58CC02' : isLocked ? '#E5E5E5' : '#1CB0F6',
+          background: isCompleted ? '#58CC02' : isLocked ? '#E5E5E5' : '#8257E5',
           boxShadow: isCompleted
             ? '0 5px 0 #46A302'
             : isLocked
-            ? '0 5px 0 #C7C7C7'
-            : '0 5px 0 #1899D6',
+            ? '0 5px 0 #E5E5E5'
+            : '0 5px 0 #6B47C6',
           border: '4px solid white',
           outline: isCompleted
             ? '3px solid #58CC02'
             : isLocked
             ? '3px solid #E5E5E5'
-            : '3px solid #1CB0F6',
+            : '3px solid #8257E5',
         }}
       >
         {isCompleted ? (
@@ -68,7 +68,7 @@ function ChapterBanner({ chapter, idx }: { chapter: Chapter; idx: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.08, duration: 0.4 }}
       className="w-full rounded-3xl py-4 px-6 flex items-center gap-4 my-6"
-      style={{ background: '#1CB0F6', boxShadow: '0 5px 0 #1899D6' }}
+      style={{ background: '#8257E5', boxShadow: '0 5px 0 #6B47C6' }}
     >
       <div
         className="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-[18px] text-white bg-white/20 flex-shrink-0"
@@ -162,7 +162,7 @@ export default function CourseDetailView({ course, onSelectLevel, onBack }: Cour
             whileTap={{ scale: 0.95 }}
             onClick={onBack}
             className="flex items-center gap-1.5 mb-5 font-extrabold text-[13px] uppercase tracking-wider cursor-pointer"
-            style={{ color: '#1CB0F6' }}
+            style={{ color: '#8257E5' }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back

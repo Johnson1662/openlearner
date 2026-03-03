@@ -89,7 +89,7 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
                 className="w-10 h-10 rounded-2xl flex items-center justify-center"
                 style={{ background: '#FFF7D6', boxShadow: '0 3px 0 #F0E0A0' }}
               >
-                <Sparkles className="w-5 h-5" style={{ color: '#FFC800' }} />
+                <Sparkles className="w-5 h-5" style={{ color: '#8257E5' }} />
               </div>
               <h2 className="text-xl font-black" style={{ color: '#3C3C3C' }}>AI 创建课程</h2>
             </div>
@@ -183,9 +183,9 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
                   disabled={material.trim().length < 50}
                   className="w-full py-4 rounded-2xl font-black text-base uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
-                    background: '#FFC800',
-                    boxShadow: '0 5px 0 #D4A500',
-                    border: '2px solid #D4A500',
+                    background: '#8257E5',
+                    boxShadow: '0 5px 0 #6B47C6',
+                    border: '2px solid #6B47C6',
                   }}
                 >
                   <Sparkles className="w-5 h-5" />
