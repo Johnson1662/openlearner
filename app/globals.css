@@ -51,7 +51,9 @@ body {
 }
 
 @layer components {
-  /* 3D tactile button — core Duolingo style */
+  /* DEPRECATED: Legacy Duolingo button and card classes
+     Migrated to card-based design with Brilliant.org style (#8257E5)
+     Modern components use inline styles with motion animations
   .duo-btn {
     @apply relative inline-flex items-center justify-center font-extrabold uppercase tracking-wider rounded-2xl transition-all duration-75 select-none cursor-pointer;
     border-bottom-width: 4px;
@@ -61,30 +63,23 @@ body {
     transform: translateY(3px);
     border-bottom-width: 1px;
   }
-
   .duo-btn-green {
     @apply duo-btn px-8 py-4 text-white text-lg;
     background: var(--color-green);
     border-color: var(--color-green-dark);
   }
   .duo-btn-green:hover { background: #4BB802; }
-
-  .duo-btn-blue {
     @apply duo-btn px-8 py-4 text-white text-lg;
     background: var(--color-blue);
     border-color: var(--color-blue-dark);
   }
   .duo-btn-blue:hover { background: #16A0DE; }
-
-  .duo-btn-gray {
     @apply duo-btn px-8 py-4 text-lg;
     background: var(--color-gray);
     color: var(--color-gray-dark);
     border-color: #C7C7C7;
     cursor: not-allowed;
   }
-
-  /* Card - flat white with strong border */
   .duo-card {
     @apply rounded-3xl border-2 bg-white;
     border-color: var(--color-border);
@@ -97,6 +92,7 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(28, 176, 246, 0.15);
   }
+  */
 
   /* Choice card - interactive answer option */
   .choice-card {

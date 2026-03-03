@@ -41,8 +41,8 @@ const config: Config = {
       boxShadow: {
         "duo-btn": "0 5px 0 0 #46A302",
         "duo-btn-blue": "0 5px 0 0 #1899D6",
-        "duo-card": "0 3px 0 0 #E5E5E5",
-        "duo-choice": "0 4px 0 0 #E5E5E5",
+        /* "duo-card": "0 3px 0 0 #E5E5E5", */ // Unused - replaced with standard Tailwind shadows
+        /* "duo-choice": "0 4px 0 0 #E5E5E5", */ // Unused - replaced with standard Tailwind shadows
       },
     },
   },
