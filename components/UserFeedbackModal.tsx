@@ -43,7 +43,7 @@ export default function UserFeedbackModal({ isOpen, onSubmit, onSkip }: UserFeed
       value: 'too_easy' as const,
       label: '太简单',
       Icon: ThumbsUp,
-      activeStyle: { background: '#DDF4FF', borderColor: '#8257E5', color: '#8257E5' },
+      activeStyle: { background: '#EEE5FF', borderColor: '#8257E5', color: '#8257E5' },
       iconColor: '#8257E5',
     },
   ];
@@ -142,7 +142,7 @@ export default function UserFeedbackModal({ isOpen, onSubmit, onSkip }: UserFeed
                 whileTap={{ scale: 0.97, y: 2 }}
                 onClick={handleSubmit}
                 className="flex-1 py-4 rounded-2xl font-black uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer"
-                style={{ background: '#58CC02', boxShadow: '0 4px 0 #46A302', border: '2px solid #46A302' }}
+                style={{ background: '#8257E5', boxShadow: '0 4px 0 #6B48D4', border: '2px solid #6B48D4' }}
               >
                 <Send className="w-4 h-4" />
                 提交反馈
