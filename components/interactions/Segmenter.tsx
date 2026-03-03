@@ -75,7 +75,7 @@ export default function Segmenter({
                     className={`
                       absolute left-1/2 top-0 bottom-0 w-1.5 -translate-x-1/2 rounded-full transition-all
                       ${markers.includes(i) 
-                        ? 'bg-[#1CB0F6] opacity-100' 
+                        ? 'bg-[#8257E5] opacity-100' 
                         : 'bg-indigo-100 opacity-0 group-hover:opacity-50'}
                     `}
                     initial={false}

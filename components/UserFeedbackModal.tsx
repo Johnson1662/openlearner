@@ -43,8 +43,8 @@ export default function UserFeedbackModal({ isOpen, onSubmit, onSkip }: UserFeed
       value: 'too_easy' as const,
       label: '太简单',
       Icon: ThumbsUp,
-      activeStyle: { background: '#DDF4FF', borderColor: '#1CB0F6', color: '#1CB0F6' },
-      iconColor: '#1CB0F6',
+      activeStyle: { background: '#DDF4FF', borderColor: '#8257E5', color: '#8257E5' },
+      iconColor: '#8257E5',
     },
   ];
 
@@ -121,7 +121,7 @@ export default function UserFeedbackModal({ isOpen, onSubmit, onSkip }: UserFeed
                 placeholder="告诉我们更多关于这节课的感受..."
                 className="w-full h-24 px-4 py-3 rounded-2xl border-2 font-semibold resize-none focus:outline-none transition-all"
                 style={{ borderColor: '#E5E5E5', color: '#3C3C3C' }}
-                onFocus={e => (e.target.style.borderColor = '#1CB0F6')}
+                onFocus={e => (e.target.style.borderColor = '#8257E5')}
                 onBlur={e => (e.target.style.borderColor = '#E5E5E5')}
               />
             </div>

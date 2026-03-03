@@ -208,7 +208,7 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
               {/* Step label */}
               <div
                 className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-xl font-extrabold text-[12px] uppercase tracking-widest"
-                style={{ background: '#DDF4FF', color: '#1CB0F6', boxShadow: '0 2px 0 #B0E0F8' }}
+                style={{ background: '#DDF4FF', color: '#8257E5', boxShadow: '0 2px 0 #D4C5F5' }}
               >
                 Step {currentStepIndex + 1} / {levelSteps.length}
               </div>
@@ -377,13 +377,13 @@ function ChoiceCard({
       className={stateClass}
       style={{
         borderBottomWidth: isSelected && !showResult ? '4px' : undefined,
-        borderBottomColor: isSelected && !showResult ? '#1CB0F6' : undefined,
+        borderBottomColor: isSelected && !showResult ? '#8257E5' : undefined,
         boxShadow: isCorrect
           ? '0 4px 0 #46A302'
           : isError
           ? '0 4px 0 #D03B3B'
           : isSelected
-          ? '0 4px 0 #1899D6'
+          ? '0 4px 0 #6B47C6'
           : '0 4px 0 #E5E5E5',
       }}
     >

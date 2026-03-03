@@ -117,7 +117,7 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
                     placeholder="例如：Python编程入门"
                     className="w-full px-4 py-3 rounded-2xl border-2 font-semibold focus:outline-none transition-all"
                     style={{ borderColor: '#E5E5E5', color: '#3C3C3C' }}
-                    onFocus={e => (e.target.style.borderColor = '#1CB0F6')}
+                    onFocus={e => (e.target.style.borderColor = '#8257E5')}
                     onBlur={e => (e.target.style.borderColor = '#E5E5E5')}
                   />
                 </div>
@@ -157,7 +157,7 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
                     rows={10}
                     className="w-full px-4 py-3 rounded-2xl border-2 font-semibold focus:outline-none transition-all resize-none"
                     style={{ borderColor: '#E5E5E5', color: '#3C3C3C' }}
-                    onFocus={e => (e.target.style.borderColor = '#1CB0F6')}
+                    onFocus={e => (e.target.style.borderColor = '#8257E5')}
                     onBlur={e => (e.target.style.borderColor = '#E5E5E5')}
                   />
                   <p className="text-xs font-extrabold uppercase tracking-wide mt-2" style={{ color: '#AFAFAF' }}>
@@ -249,7 +249,7 @@ export default function CourseCreator({ isOpen, onClose, onCourseCreated }: Cour
                     <div key={chapter.id || idx} className="p-4 rounded-2xl border-2 flex items-center gap-3" style={{ borderColor: '#E5E5E5' }}>
                       <span
                         className="w-7 h-7 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
-                        style={{ background: '#DDF4FF', color: '#1CB0F6' }}
+                        style={{ background: '#F0EBF8', color: '#8257E5' }}
                       >
                         {idx + 1}
                       </span>

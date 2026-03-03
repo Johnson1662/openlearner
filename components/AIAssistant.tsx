@@ -70,7 +70,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center z-40 cursor-pointer text-white"
         style={{
-          background: '#1CB0F6',
+          background: '#8257E5',
           boxShadow: '0 5px 0 #1899D6',
           border: '2px solid #1899D6',
         }}
@@ -92,9 +92,9 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
               <div className="flex items-center gap-3">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: '#DDF4FF', boxShadow: '0 2px 0 #B0E0F8' }}
+                  style={{ background: '#DDF4FF', boxShadow: '0 2px 0 #D4C5F5' }}
                 >
-                  <Bot className="w-5 h-5" style={{ color: '#1CB0F6' }} />
+                  <Bot className="w-5 h-5" style={{ color: '#8257E5' }} />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm" style={{ color: '#3C3C3C' }}>AI 学习助手</h3>
@@ -123,7 +123,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
                     className="max-w-[85%] p-3 rounded-2xl text-sm font-semibold"
                     style={
                       message.role === 'user'
-                        ? { background: '#1CB0F6', color: '#fff', borderRadius: '16px 16px 4px 16px' }
+                        ? { background: '#8257E5', color: '#fff', borderRadius: '16px 16px 4px 16px' }
                         : { background: '#fff', color: '#3C3C3C', border: '2px solid #E5E5E5', borderRadius: '16px 16px 16px 4px' }
                     }
                   >
@@ -141,7 +141,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
                         animate={{ opacity: [0.3, 1, 0.3] }}
                         transition={{ duration: 1, repeat: Infinity, delay }}
                         className="w-2 h-2 rounded-full"
-                        style={{ background: '#1CB0F6' }}
+                        style={{ background: '#8257E5' }}
                       />
                     ))}
                   </div>
@@ -153,7 +153,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
             {/* Current topic badge */}
             {currentTopic && (
               <div className="px-4 py-2 border-t-2" style={{ borderColor: '#E5E5E5', background: '#DDF4FF' }}>
-                <p className="text-xs font-extrabold flex items-center gap-1.5" style={{ color: '#1CB0F6' }}>
+                <p className="text-xs font-extrabold flex items-center gap-1.5" style={{ color: '#8257E5' }}>
                   <Sparkles className="w-3 h-3" />
                   当前学习：{currentTopic}
                 </p>
@@ -181,7 +181,7 @@ export default function AIAssistant({ currentTopic }: AIAssistantProps) {
                   whileTap={{ scale: 0.93, y: 2 }}
                   onClick={handleSend}
                   className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer text-white flex-shrink-0"
-                  style={{ background: '#1CB0F6', boxShadow: '0 3px 0 #1899D6' }}
+                  style={{ background: '#8257E5', boxShadow: '0 3px 0 #1899D6' }}
                 >
                   <Send className="w-4 h-4" />
                 </motion.button>
