@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, BookOpen, Menu, X, Flame, Heart, Zap } from 'lucide-react';
+import { Home, BookOpen, Menu, X, Zap, Key, User } from 'lucide-react';
 import { PageView, UserProgress } from '@/types';
 import { useState } from 'react';
 
@@ -15,134 +15,97 @@ export default function Navbar({ currentView, onViewChange, progress }: NavbarPr
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: { view: PageView; label: string; icon: React.ReactNode; match?: PageView[] }[] = [
-    { view: 'home', label: '首页', icon: <Home className="w-5 h-5" /> },
-    { view: 'courses', label: '课程', icon: <BookOpen className="w-5 h-5" />, match: ['courses', 'course-detail'] },
+    { view: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
+    { view: 'courses', label: 'Courses', icon: <BookOpen className="w-5 h-5" />, match: ['courses', 'course-detail'] },
   ];
 
   const isActive = (item: typeof navItems[0]) =>
     currentView === item.view || (item.match?.includes(currentView) ?? false);
 
-  const streak = progress?.currentStreak ?? 0;
-  const lives = 5;
-  const xp = progress?.totalXP ?? 0;
-
   return (
     <motion.nav
       initial={{ y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-      className="sticky top-0 z-50 bg-white"
-      style={{ borderBottom: '2px solid #E5E5E5' }}
+      className="sticky top-0 z-50 bg-white border-b border-[#E5E5E5]"
     >
-      <div className="max-w-3xl mx-auto px-4 flex items-center h-16 gap-4">
-        {/* Logo */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onViewChange('home')}
-          className="flex items-center gap-2.5 cursor-pointer mr-auto md:mr-0"
-        >
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: '#58CC02', boxShadow: '0 3px 0 #46A302' }}
+      <div className="max-w-[1200px] mx-auto px-6 flex items-center h-[72px] justify-between">
+        {/* Left: Logo + Nav */}
+        <div className="flex items-center gap-8">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onViewChange('home')}
+            className="flex items-center gap-2 cursor-pointer"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-            </svg>
-          </div>
-          <span className="text-[18px] font-black tracking-tight hidden sm:block" style={{ color: '#3C3C3C' }}>
-            openlearner
-          </span>
-        </motion.button>
+            <span className="text-[24px] font-black tracking-tight text-[#3C3C3C]">
+              Brilliant
+            </span>
+          </motion.button>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
-          {navItems.map((item) => {
-            const active = isActive(item);
-            return (
-              <motion.button
-                key={item.view}
-                onClick={() => onViewChange(item.view)}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-extrabold text-[14px] uppercase tracking-wider transition-colors cursor-pointer relative"
-                style={{
-                  color: active ? '#58CC02' : '#AFAFAF',
-                  background: active ? 'rgba(88, 204, 2, 0.08)' : 'transparent',
-                  borderBottom: active ? '3px solid #58CC02' : '3px solid transparent',
-                }}
-              >
-                {item.icon}
-                {item.label}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Stats Row */}
-        <div className="hidden sm:flex items-center gap-5">
-          {/* Streak */}
-          <div className="stat-badge" style={{ color: '#FF9600' }}>
-            <Flame className="w-6 h-6 fill-current" />
-            <span>{streak}</span>
-          </div>
-          {/* Hearts */}
-          <div className="stat-badge" style={{ color: '#FF4B4B' }}>
-            <Heart className="w-5 h-5 fill-current" />
-            <span>{lives}</span>
-          </div>
-          {/* XP */}
-          <div className="stat-badge" style={{ color: '#1CB0F6' }}>
-            <Zap className="w-5 h-5 fill-current" />
-            <span>{xp}</span>
+          <div className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const active = isActive(item);
+              return (
+                <button
+                  key={item.view}
+                  onClick={() => onViewChange(item.view)}
+                  className={`px-4 py-2 rounded-lg font-bold text-[16px] transition-colors relative ${
+                    active ? 'text-[#3C3C3C]' : 'text-[#757575] hover:text-[#3C3C3C]'
+                  }`}
+                >
+                  {item.label}
+                  {active && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute bottom-0 left-4 right-4 h-0.5 bg-[#3C3C3C]"
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 -mr-1 cursor-pointer"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen
-            ? <X className="w-6 h-6" style={{ color: '#3C3C3C' }} />
-            : <Menu className="w-6 h-6" style={{ color: '#3C3C3C' }} />}
-        </button>
+        {/* Right: Stats */}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-[#E5E5E5] font-bold text-[#3C3C3C]">
+            <span className="text-lg">1</span>
+            <Key className="w-5 h-5 text-[#FFC800] fill-current" />
+          </div>
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-[#E5E5E5] font-bold text-[#3C3C3C]">
+            <span className="text-lg">{progress?.energy || 17}</span>
+            <Zap className="w-5 h-5 text-[#FFC800] fill-current" />
+          </div>
+          
+          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <User className="w-6 h-6 text-[#757575]" />
+          </button>
+
+          <button
+            className="md:hidden p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile dropdown */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden px-4 pb-4 overflow-hidden"
-            style={{ borderTop: '2px solid #E5E5E5' }}
+            className="md:hidden border-t border-[#E5E5E5] bg-white px-6 py-4"
           >
-            {navItems.map((item) => {
-              const active = isActive(item);
-              return (
-                <button
-                  key={item.view}
-                  onClick={() => { onViewChange(item.view); setMobileMenuOpen(false); }}
-                  className="flex items-center gap-3 w-full py-3 font-extrabold text-[15px] uppercase tracking-wide cursor-pointer"
-                  style={{ color: active ? '#58CC02' : '#AFAFAF' }}
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              );
-            })}
-            <div className="flex items-center gap-6 pt-3" style={{ borderTop: '2px solid #E5E5E5' }}>
-              <div className="stat-badge" style={{ color: '#FF9600' }}>
-                <Flame className="w-5 h-5 fill-current" /><span>{streak}</span>
-              </div>
-              <div className="stat-badge" style={{ color: '#FF4B4B' }}>
-                <Heart className="w-5 h-5 fill-current" /><span>{lives}</span>
-              </div>
-              <div className="stat-badge" style={{ color: '#1CB0F6' }}>
-                <Zap className="w-5 h-5 fill-current" /><span>{xp}</span>
-              </div>
-            </div>
+            {navItems.map((item) => (
+              <button
+                key={item.view}
+                onClick={() => { onViewChange(item.view); setMobileMenuOpen(false); }}
+                className="block w-full text-left py-3 font-bold text-[#3C3C3C]"
+              >
+                {item.label}
+              </button>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
