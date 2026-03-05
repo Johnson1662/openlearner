@@ -1,6 +1,31 @@
 import { AIProviderFactory } from './providers';
 import { AIMessage } from './types';
 import { LessonStep } from '@/types';
+import { parseAiJson } from './json-response';
+
+function generateOfflineLevelSteps(input: LevelContentInput): LessonStep[] {
+  return [
+    {
+      id: 'step-1',
+      type: 'info',
+      title: `${input.levelTitle} - 内容摘要`,
+      content: `${input.levelDescription}\n\n当前网络或模型输出不稳定，已生成基础学习步骤。请先完成本节关键概念复盘。`,
+    },
+    {
+      id: 'step-2',
+      type: 'multiple_choice',
+      title: `${input.levelTitle} - 快速检验`,
+      content: '请选择最符合本关卡目标的学习动作。',
+      question: '遇到内容不稳定时，最推荐的做法是？',
+      options: [
+        { id: 'a', text: '先记录关键概念并做一次小练习', isCorrect: true },
+        { id: 'b', text: '跳过本关卡不做', isCorrect: false },
+        { id: 'c', text: '只背标题不看内容', isCorrect: false },
+      ],
+      hint: '优先保证学习连续性和可执行性。',
+    },
+  ];
+}
 
 export interface LevelContentInput {
   levelTitle: string;
@@ -41,7 +66,7 @@ export async function generateLevelContent(input: LevelContentInput): Promise<Le
   const messages: AIMessage[] = [
     {
       role: 'system',
-      content: '你根据材料生成学习关卡内容。输出必须是有效的JSON格式。支持HTML、LaTeX公式和SVG动画。',
+      content: '你根据材料生成学习关卡内容。输出必须是有效的JSON格式，禁止使用```json代码块。支持HTML、LaTeX公式和SVG动画。',
     },
     {
       role: 'user',
@@ -150,29 +175,11 @@ ${input.material}
     throw new Error('Failed to generate level content');
   }
 
-  let jsonContent = content;
-
-  const jsonMatch = content.match(/\`\`\`json\n?([\s\S]*?)\n?\`\`\`/);
-  if (jsonMatch) {
-    jsonContent = jsonMatch[1];
-  } else {
-    const jsonStart = content.indexOf('{');
-    const jsonEnd = content.lastIndexOf('}');
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      jsonContent = content.substring(jsonStart, jsonEnd + 1);
-    }
-  }
-
   try {
-    const result = JSON.parse(jsonContent);
-    return result.steps;
-  } catch (parseError: any) {
-    let fixedContent = jsonContent.replace(/,(\s*[}\]])/g, '$1');
-    try {
-      const result = JSON.parse(fixedContent);
-      return result.steps;
-    } catch (fixError) {
-      throw new Error(`Failed to parse AI response: ${parseError.message}`);
-    }
+    const result = parseAiJson<{ steps?: LessonStep[] }>(content);
+    return result.steps || [];
+  } catch (error) {
+    console.error('Failed to parse generated level JSON:', error);
+    return generateOfflineLevelSteps(input);
   }
 }

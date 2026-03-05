@@ -6,22 +6,98 @@ import {
   GeneratedCourse,
   AIMessage
 } from './types';
+import { isLikelyNetworkTimeout } from './network-timeout';
+import { parseAiJson } from './json-response';
 
-async function generateCourseOutline(
+function isLikelyJsonGenerationFailure(details: string): boolean {
+  const normalized = details.toLowerCase();
+  return normalized.includes('no object generated')
+    || normalized.includes('json parsing failed')
+    || normalized.includes('failed to parse ai response')
+    || normalized.includes('expected double-quoted property name')
+    || normalized.includes('unterminated string')
+    || normalized.includes('could not parse the response');
+}
+
+function generateOfflineCourseOutline(material: string, title?: string): GeneratedCourse {
+  const snippets = material
+    .split(/[\n。！？.!?]/)
+    .map(item => item.trim())
+    .filter(item => item.length >= 6)
+    .slice(0, 9);
+
+  const pick = (index: number, fallback: string) => {
+    const value = snippets[index] || fallback;
+    return value.length > 24 ? `${value.slice(0, 24)}...` : value;
+  };
+
+  const chapterTitles = [
+    pick(0, '基础概念'),
+    pick(1, '核心方法'),
+    pick(2, '实践应用'),
+  ];
+
+  const chapters: GeneratedChapter[] = chapterTitles.map((chapterTitle, idx) => ({
+    title: `第${idx + 1}章：${chapterTitle}`,
+    description: `围绕${chapterTitle}建立可执行的知识框架。`,
+    order: idx + 1,
+  }));
+
+  const levels: GeneratedLevel[] = chapters.flatMap((chapter, chapterIndex) => {
+    return [
+      {
+        title: `${chapter.title} - 核心要点`,
+        description: '梳理关键概念与常见误区。',
+        order: chapterIndex * 2 + 1,
+        chapterIndex,
+        xpReward: 90,
+        example: { title: '', scenario: '', content: '' },
+        knowledgePoint: { title: '', content: '' },
+        quiz: [],
+      },
+      {
+        title: `${chapter.title} - 实战练习`,
+        description: '通过练习强化理解并形成输出。',
+        order: chapterIndex * 2 + 2,
+        chapterIndex,
+        xpReward: 110,
+        example: { title: '', scenario: '', content: '' },
+        knowledgePoint: { title: '', content: '' },
+        quiz: [],
+      },
+    ];
+  });
+
+  return {
+    title: title || pick(0, '学习主题课程'),
+    description: '当前网络不可达，已使用本地降级方案生成课程骨架。',
+    icon: '📚',
+    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
+    coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600&fit=crop',
+    chapters,
+    levels,
+    estimatedLessons: levels.length,
+    estimatedExercises: levels.length * 2,
+  };
+}
+
+function buildOutlineMessages(
   material: string,
+  difficulty: string,
+  userContext: string,
   title?: string,
-  difficulty: string = 'intermediate'
-): Promise<GeneratedCourse> {
-  const provider = AIProviderFactory.getProvider();
+  learningPacing?: string,
+  priorKnowledge?: string,
+  compactMode: boolean = false,
+): AIMessage[] {
+  const materialLimit = compactMode ? 700 : 1200;
+  const chapterRule = compactMode ? '生成2-3个章节' : '生成3-4个章节';
+  const levelRule = compactMode ? '每个章节包含2-3个关卡' : '每个章节包含2-4个关卡';
 
-  if (!provider.isAvailable()) {
-    throw new Error(`AI provider ${provider.name} is not configured`);
-  }
-
-  const messages: AIMessage[] = [
+  return [
     {
       role: 'system',
-      content: '你是一个课程设计专家。快速生成课程大纲，只输出章节和关卡标题。输出必须是有效的JSON格式。',
+      content: '你是一个课程设计专家。快速生成课程大纲，只输出章节和关卡标题。输出必须是有效的JSON格式，禁止使用```json代码块。',
     },
     {
       role: 'user',
@@ -31,14 +107,19 @@ async function generateCourseOutline(
 ${title ? `指定标题: ${title}` : '请根据内容生成标题'}
 难度: ${difficulty === 'beginner' ? '初级' : difficulty === 'advanced' ? '高级' : '中级'}
 
-材料内容（前2000字符）:
-${material.slice(0, 2000)}
+${userContext ? `学习者信息:\n${userContext}` : ''}
+
+材料内容（前${materialLimit}字符）:
+${material.slice(0, materialLimit)}
 
 要求:
-1. 生成3-5个章节
-2. 每个章节包含2-4个关卡
+1. ${chapterRule}
+2. ${levelRule}
 3. 每个关卡只需要title、description和xpReward
 4. 不需要生成详细内容
+${learningPacing === 'slow' ? '5. 内容应更详细，步骤更细致' : ''}
+${learningPacing === 'fast' ? '5. 内容应更精简，突出重点' : ''}
+${priorKnowledge ? `6. 基于学习者的先前知识调整内容深度` : ''}
 
 XP设置: 初级50-80, 中级80-120, 高级120-150
 
@@ -67,62 +148,133 @@ XP设置: 初级50-80, 中级80-120, 高级120-150
 }`,
     },
   ];
+}
 
-  const response = await provider.generateCompletion(messages, {
-    temperature: 0.7,
-    maxTokens: 2000,
-    responseFormat: 'json',
-  });
+async function generateCourseOutline(
+  material: string,
+  title?: string,
+  difficulty: string = 'intermediate',
+  subject?: string,
+  priorKnowledge?: string,
+  learningGoal?: string,
+  learningPacing?: string,
+  abortSignal?: AbortSignal
+): Promise<GeneratedCourse> {
+  const provider = AIProviderFactory.getProvider();
+
+  if (!provider.isAvailable()) {
+    throw new Error(`AI provider ${provider.name} is not configured`);
+  }
+
+  // Build user context based on provided parameters
+  let userContext = '';
+  if (subject) {
+    userContext += `学科/主题: ${subject}\n`;
+  }
+  if (priorKnowledge) {
+    userContext += `学习者的先前知识: ${priorKnowledge}\n`;
+  }
+  if (learningGoal) {
+    userContext += `学习目标: ${learningGoal}\n`;
+  }
+  if (learningPacing) {
+    const pacingLabel = learningPacing === 'slow' ? '慢速' : learningPacing === 'fast' ? '快速' : '适中';
+    userContext += `学习进度: ${pacingLabel}\n`;
+  }
+
+  const primaryMessages = buildOutlineMessages(
+    material,
+    difficulty,
+    userContext,
+    title,
+    learningPacing,
+    priorKnowledge,
+    false,
+  );
+
+  let response;
+  try {
+    response = await provider.generateCompletion(primaryMessages, {
+      temperature: 0.6,
+      maxTokens: 900,
+      responseFormat: 'json',
+      abortSignal,
+      maxRetries: 0,
+      timeout: {
+        stepMs: 28000,
+        totalMs: 34000,
+      },
+    });
+  } catch (error) {
+    const details = error instanceof Error ? error.message : String(error);
+    if (!isLikelyNetworkTimeout(details) && !isLikelyJsonGenerationFailure(details)) {
+      throw error;
+    }
+
+    const fallbackMessages = buildOutlineMessages(
+      material,
+      difficulty,
+      userContext,
+      title,
+      learningPacing,
+      priorKnowledge,
+      true,
+    );
+
+    try {
+      response = await provider.generateCompletion(fallbackMessages, {
+        temperature: 0.4,
+        maxTokens: 600,
+        responseFormat: 'json',
+        abortSignal,
+        maxRetries: 0,
+        timeout: {
+          stepMs: 20000,
+          totalMs: 24000,
+        },
+      });
+    } catch (fallbackError) {
+      const fallbackDetails = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      if (!isLikelyNetworkTimeout(fallbackDetails) && !isLikelyJsonGenerationFailure(fallbackDetails)) {
+        throw fallbackError;
+      }
+
+      if ((process.env.AI_NETWORK_FALLBACK_PROVIDER || '').toLowerCase() === 'none') {
+        throw fallbackError;
+      }
+
+      return generateOfflineCourseOutline(material, title);
+    }
+  }
 
   const content = response.content;
   if (!content) {
     throw new Error('Failed to generate course structure');
   }
 
-  let jsonContent = content;
-  const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/);
-  if (jsonMatch) {
-    jsonContent = jsonMatch[1];
-  } else {
-    const jsonStart = content.indexOf('{');
-    const jsonEnd = content.lastIndexOf('}');
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      jsonContent = content.substring(jsonStart, jsonEnd + 1);
+  let result: Partial<GeneratedCourse>;
+  try {
+    result = parseAiJson<Partial<GeneratedCourse>>(content);
+  } catch (error) {
+    console.error('Failed to parse generated course outline JSON:', error);
+    if ((process.env.AI_NETWORK_FALLBACK_PROVIDER || '').toLowerCase() === 'none') {
+      throw error;
     }
+
+    return generateOfflineCourseOutline(material, title);
   }
 
-  try {
-    const result = JSON.parse(jsonContent);
-    return {
-      title: result.title || title || '未命名课程',
-      description: result.description || '由AI生成的个性化课程',
-      icon: result.icon || '📚',
-      thumbnail: `https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop`,
-      coverImage: `https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600&fit=crop`,
-      chapters: result.chapters || [],
-      levels: result.levels || [],
-      estimatedLessons: result.levels?.length || 0,
-      estimatedExercises: result.levels?.length * 2 || 0,
-    };
-  } catch (parseError: any) {
-    let fixedContent = jsonContent.replace(/,(\s*[}\]])/g, '$1');
-    try {
-      const result = JSON.parse(fixedContent);
-      return {
-        title: result.title || title || '未命名课程',
-        description: result.description || '由AI生成的个性化课程',
-        icon: result.icon || '📚',
-        thumbnail: `https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop`,
-        coverImage: `https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600&fit=crop`,
-        chapters: result.chapters || [],
-        levels: result.levels || [],
-        estimatedLessons: result.levels?.length || 0,
-        estimatedExercises: result.levels?.length * 2 || 0,
-      };
-    } catch (fixError) {
-      throw new Error(`Failed to parse AI response: ${parseError.message}`);
-    }
-  }
+  return {
+    title: result.title || title || '未命名课程',
+    description: result.description || '由AI生成的个性化课程',
+    icon: result.icon || '📚',
+    thumbnail: `https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop`,
+    coverImage: `https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=600&fit=crop`,
+    chapters: result.chapters || [],
+    levels: result.levels || [],
+    estimatedLessons: result.levels?.length || 0,
+    estimatedExercises: result.levels?.length * 2 || 0,
+  };
 }
 
 export async function generateCourse(input: CourseGenerationInput): Promise<GeneratedCourse> {
@@ -133,7 +285,16 @@ export async function generateCourse(input: CourseGenerationInput): Promise<Gene
   }
 
   try {
-    return await generateCourseOutline(input.material, input.title, input.difficulty);
+    return await generateCourseOutline(
+      input.material,
+      input.title,
+      input.difficulty,
+      input.subject,
+      input.priorKnowledge,
+      input.learningGoal,
+      input.learningPacing,
+      input.abortSignal
+    );
   } catch (error) {
     console.error('Error generating course:', error);
     throw error;

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateCourse } from '@/lib/ai/course-generator';
-import { saveCourse, saveCourseMaterial } from '@/lib/db/memory-db';
+import { saveCourse, saveCourseMaterial, saveCourseRequirements } from '@/lib/db/memory-db';
+import { isLikelyNetworkTimeout } from '@/lib/ai/network-timeout';
 import { v4 as uuidv4 } from 'uuid';
 import { Course, Chapter, Level } from '@/types';
+
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { material, title, difficulty = 'intermediate' } = body;
+    const { material, title, difficulty = 'intermediate', subject, priorKnowledge, learningGoal, learningPacing, materialSourceType } = body;
 
     if (!material || material.trim().length < 50) {
       return NextResponse.json(
@@ -20,6 +23,11 @@ export async function POST(request: NextRequest) {
       material,
       title,
       difficulty,
+      subject,
+      priorKnowledge,
+      learningGoal,
+      learningPacing,
+      abortSignal: request.signal,
     });
 
     const courseId = `course-${uuidv4()}`;
@@ -77,6 +85,15 @@ export async function POST(request: NextRequest) {
     saveCourse(course, chapters, levels);
     saveCourseMaterial(courseId, material);
 
+    // Save course requirements if provided
+    saveCourseRequirements(courseId, {
+      subject: subject || title || undefined,
+      priorKnowledge: priorKnowledge || difficulty,
+      learningGoal,
+      learningPacing,
+      materialSourceType,
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -84,15 +101,25 @@ export async function POST(request: NextRequest) {
         course,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating course:', error);
+
+    const details = error instanceof Error ? error.message : String(error);
+    const isNetworkTimeout = isLikelyNetworkTimeout(details);
+    const isConnectTimeout = details.toLowerCase().includes('und_err_connect_timeout')
+      || details.toLowerCase().includes('connect timeout error');
+
     return NextResponse.json(
       { 
-        error: 'Failed to generate course. Please try again.',
-        details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        error: isConnectTimeout
+          ? 'Cannot connect to Gemini API from current network. Configure GEMINI_BASE_URL/proxy or retry later.'
+          : isNetworkTimeout
+            ? 'Gemini API network timeout. Please retry in a moment.'
+            : 'Failed to generate course. Please try again.',
+        details,
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined,
       },
-      { status: 500 }
+      { status: isNetworkTimeout ? 503 : 500 }
     );
   }
 }

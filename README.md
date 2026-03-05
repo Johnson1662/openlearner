@@ -50,6 +50,32 @@
 创建 `.env.local` 文件：
 
 ```env
+# Gemini（直连 Google AI）
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-1.5-flash
+
+# 可选：网络超时与重试
+GEMINI_STEP_TIMEOUT_MS=120000
+GEMINI_TOTAL_TIMEOUT_MS=300000
+# 兼容旧配置（等同于 GEMINI_STEP_TIMEOUT_MS）
+GEMINI_TIMEOUT_MS=120000
+GEMINI_MAX_RETRIES=2
+# 可选：连接阶段超时（undici，默认30000）
+GEMINI_CONNECT_TIMEOUT_MS=30000
+# 可选：Gemini 思考预算（JSON生成建议 0，减少 reasoning 截断）
+GEMINI_THINKING_BUDGET=0
+# 可选：仅 gemini-3 可用；与 GEMINI_THINKING_BUDGET 二选一
+# GEMINI_THINKING_LEVEL=minimal
+# 若两者都配置，代码会优先使用 GEMINI_THINKING_BUDGET
+# 可选：是否返回思考内容（默认 false）
+# GEMINI_INCLUDE_THOUGHTS=false
+# 可选：通过代理或网关访问 Gemini（示例）
+# GEMINI_BASE_URL=https://your-gateway.example.com/v1beta
+
+# 可选：Gemini 网络不可达时回退（local/none）
+AI_NETWORK_FALLBACK_PROVIDER=local
+
 # 讯飞星火 (推荐)
 AI_PROVIDER=spark
 SPARK_API_KEY=your_api_key

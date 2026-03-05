@@ -12,6 +12,12 @@ export interface AIRequestOptions {
   temperature?: number;
   maxTokens?: number;
   responseFormat?: 'text' | 'json';
+  timeout?: {
+    totalMs?: number;
+    stepMs?: number;
+  };
+  maxRetries?: number;
+  abortSignal?: AbortSignal;
 }
 
 export interface AIMessage {
@@ -29,6 +35,11 @@ export interface CourseGenerationInput {
   title?: string;
   material: string;
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  subject?: string;
+  priorKnowledge?: string;
+  learningGoal?: string;
+  learningPacing?: 'slow' | 'moderate' | 'fast';
+  abortSignal?: AbortSignal;
 }
 
 export interface GeneratedChapter {
