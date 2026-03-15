@@ -284,3 +284,13 @@ export async function clearGeneratedLevelContent(): Promise<{ levelsCleared: num
     cacheEntriesCleared: result.data?.cacheEntriesCleared || 0,
   };
 }
+
+export async function deleteCourseApi(courseId: string): Promise<void> {
+  const response = await fetch(`${AI_API_BASE}/api/courses/${courseId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete course');
+  }
+}

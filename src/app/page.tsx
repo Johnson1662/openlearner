@@ -12,7 +12,7 @@ import CourseCreator from '@/components/course/CourseCreator';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
 import AIAssistant from '@/components/assistant/AIAssistant';
 import { mockUserProgress } from '@/data/mockLevels';
-import { fetchUserData, fetchCourses, fetchCourseDetails, recordStudySession, updateProgress } from '@/lib/api';
+import { fetchUserData, fetchCourses, fetchCourseDetails, recordStudySession, updateProgress, deleteCourseApi } from '@/lib/api';
 import { PageView, Level, UserProgress, Course } from '@/types';
 
 const pageTransition = {
@@ -177,10 +177,16 @@ export default function Home() {
     const confirmed = window.confirm('确认删除这个课程吗？此操作不可撤销。');
     if (!confirmed) return;
 
-    setCourses((prev) => prev.filter((c) => c.id !== courseId));
-    if (activeCourse?.id === courseId) {
-      setActiveCourse(null);
-      setCurrentView('courses');
+    try {
+      await deleteCourseApi(courseId);
+      setCourses((prev) => prev.filter((c) => c.id !== courseId));
+      if (activeCourse?.id === courseId) {
+        setActiveCourse(null);
+        setCurrentView('courses');
+      }
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      alert('删除失败，请稍后重试');
     }
   };
 

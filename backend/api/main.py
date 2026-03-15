@@ -241,6 +241,31 @@ async def get_course(course_id: str):
         return {"success": False, "error": str(e)}
 
 
+@app.delete("/api/courses/{course_id}")
+async def delete_course(course_id: str):
+    """Delete a course from database"""
+    try:
+        conn = db.get_db()
+        cursor = conn.cursor()
+        
+        # Delete related records first
+        cursor.execute("DELETE FROM user_progress WHERE course_id = ?", (course_id,))
+        cursor.execute("DELETE FROM user_answers WHERE course_id = ?", (course_id,))
+        cursor.execute("DELETE FROM level_content_cache WHERE course_id = ?", (course_id,))
+        
+        # Delete course
+        cursor.execute("DELETE FROM courses WHERE id = ?", (course_id,))
+        
+        conn.commit()
+        conn.close()
+        
+        logger.info(f"Course {course_id} deleted successfully")
+        return {"success": True, "data": {"courseId": course_id}}
+    except Exception as e:
+        logger.error(f"Error deleting course: {str(e)}", exc_info=True)
+        return {"success": False, "error": str(e)}
+
+
 @app.post("/api/admin/clear-level-content")
 async def clear_level_content():
     """Clear all generated level content."""
