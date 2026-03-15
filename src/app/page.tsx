@@ -203,23 +203,23 @@ export default function Home() {
         <AnimatePresence mode="wait">
           {currentView === 'home' && (
             <motion.div key="home" {...pageTransition}>
-              <HomeView
-                courses={courses}
-                recentCourses={recentCourses}
-                progress={progress}
-                onSelectCourse={handleSelectCourse}
-                onAddMaterial={handleAddMaterial}
-                onDeleteCourse={handleDeleteCourse}
-              />
+<HomeView
+              courses={courses}
+              recentCourses={recentCourses}
+              progress={progress}
+              onSelectCourse={handleSelectCourse}
+              onAddMaterial={handleAddMaterial}
+            />
             </motion.div>
           )}
 
           {currentView === 'courses' && (
             <motion.div key="courses" {...pageTransition}>
-              <CourseView
-                courses={courses}
-                onSelectCourse={handleSelectCourse}
-              />
+<CourseView
+              courses={courses}
+              onSelectCourse={handleSelectCourse}
+              onDeleteCourse={handleDeleteCourse}
+            />
             </motion.div>
           )}
 

@@ -1,12 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BookOpen, Star, Zap, ChevronRight, Plus } from 'lucide-react';
+import { BookOpen, Star, Zap, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { Course } from '@/types';
 
 interface CourseViewProps {
   courses: Course[];
   onSelectCourse: (course: Course) => void;
+  onDeleteCourse: (courseId: string) => void;
 }
 
 const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
@@ -15,7 +16,7 @@ const fadeUp = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.32, 0.72, 0, 1] } },
 };
 
-export default function CourseView({ courses, onSelectCourse }: CourseViewProps) {
+export default function CourseView({ courses, onSelectCourse, onDeleteCourse }: CourseViewProps) {
   const categories = [
     { title: 'Your Learning Path', courses: courses.slice(0, 3) },
     { title: 'Explore More', courses: courses.slice(3) },
@@ -54,13 +55,24 @@ export default function CourseView({ courses, onSelectCourse }: CourseViewProps)
 
               <div className="flex gap-6 overflow-x-auto pb-8 pt-2 px-2 no-scrollbar -mx-2">
                 {category.courses.map((course) => (
-                  <motion.div
-                    key={course.id}
-                    whileHover={{ y: -8 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onSelectCourse(course)}
-                    className="flex-shrink-0 w-[300px] rounded-[32px] bg-card border border-border/60 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden p-8 flex flex-col h-full"
-                  >
+<motion.div
+                key={course.id}
+                whileHover={{ y: -8 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onSelectCourse(course)}
+                className="group/card flex-shrink-0 w-[300px] rounded-[32px] bg-card border border-border/60 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden p-8 flex flex-col h-full relative"
+              >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm('确认删除这个课程吗？')) {
+                      onDeleteCourse(course.id);
+                    }
+                  }}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-red-50 text-red-500 opacity-0 group-hover/card:opacity-100 hover:bg-red-100 transition-all z-10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
                     <div className="w-20 h-20 rounded-[24px] bg-muted/50 flex items-center justify-center text-4xl mb-6 border border-border/20">
                       {course.icon || '📖'}
                     </div>

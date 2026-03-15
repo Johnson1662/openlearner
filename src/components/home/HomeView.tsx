@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Zap, Plus, ChevronRight, CheckCircle2, BookOpen, Trophy, Flame, Trash2 } from 'lucide-react';
+import { Zap, Plus, ChevronRight, CheckCircle2, BookOpen, Trophy, Flame } from 'lucide-react';
 import { Course, UserProgress, RecentCourse } from '@/types';
 import { getStreakDays } from '@/data/mockLevels';
 
@@ -11,10 +11,9 @@ interface HomeViewProps {
   progress: UserProgress;
   onSelectCourse: (course: Course) => void;
   onAddMaterial: () => void;
-  onDeleteCourse: (courseId: string) => void;
 }
 
-export default function HomeView({ courses, recentCourses, progress, onSelectCourse, onAddMaterial, onDeleteCourse }: HomeViewProps) {
+export default function HomeView({ courses, recentCourses, progress, onSelectCourse, onAddMaterial }: HomeViewProps) {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(courses[0] || null);
   const streakDays = getStreakDays(progress.currentStreak, progress.lastStudyDate);
 
@@ -91,19 +90,12 @@ export default function HomeView({ courses, recentCourses, progress, onSelectCou
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-black text-foreground tracking-tight">Current Focus</h2>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => selectedCourse && onDeleteCourse(selectedCourse.id)}
-                  className="text-sm font-bold text-red-600 hover:text-red-500 transition-colors flex items-center gap-1"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  删除课程
-                </button>
-                <button onClick={onAddMaterial} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                  <Plus className="w-4 h-4" />
-                  New Course
-                </button>
-              </div>
+<div className="flex items-center gap-3">
+            <button onClick={onAddMaterial} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+              <Plus className="w-4 h-4" />
+              New Course
+            </button>
+          </div>
             </div>
 
             {selectedCourse ? (
