@@ -304,15 +304,15 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
       <header className="px-4 py-4 flex items-center gap-4 max-w-3xl mx-auto w-full">
         <button
           onClick={onBack}
-          className="flex-shrink-0 p-1 cursor-pointer transition-colors text-duo-grayDark"
+          className="flex-shrink-0 p-1 cursor-pointer transition-colors text-muted-foreground hover:text-foreground"
         >
-          <X className="w-9 h-9" strokeWidth={3} />
+          <X className="w-9 h-9" strokeWidth={2} />
         </button>
 
-        {/* Glowing progress bar */}
-        <div className="flex-1 progress-bar-track h-5">
+        {/* Progress bar */}
+        <div className="flex-1 h-5 bg-muted rounded-full overflow-hidden border border-border/40">
           <motion.div
-            className="progress-bar-fill h-full"
+            className="h-full bg-primary"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ type: 'spring', stiffness: 80, damping: 20 }}
@@ -320,10 +320,7 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
         </div>
 
         {/* XP badge */}
-        <div
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-[14px] flex-shrink-0 bg-duo-goldLight text-duo-goldDark"
-          style={{ boxShadow: '0 2px 0 #F0E0A0' }}
-        >
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-[14px] flex-shrink-0 bg-yellow-500/10 text-yellow-600 border border-yellow-500/20">
           <Zap className="w-4 h-4 fill-current" />
           {xpEarned}
         </div>
@@ -342,32 +339,26 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
               className="flex flex-col gap-6"
             >
               {/* Step label */}
-              <div
-                className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-xl font-extrabold text-[12px] uppercase tracking-widest bg-primary/20 text-primary"
-                style={{ boxShadow: '0 2px 0 #D4C5F5' }}
-              >
+              <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-xl font-extrabold text-[12px] uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
                 Step {currentStepIndex + 1} / {levelSteps.length}
               </div>
 
               {/* Title */}
-              <h2 className="text-[26px] font-black leading-snug text-duo-text">
+              <h2 className="text-2xl font-black leading-snug text-foreground">
                 {currentStep.title || level.title}
               </h2>
 
               {/* Content */}
               {currentStep.content && (
-                <div className="text-[17px] font-semibold leading-relaxed text-duo-text">
+                <div className="text-base font-medium leading-relaxed text-foreground">
                   <ContentRenderer content={currentStep.content} />
                 </div>
               )}
 
               {/* Question */}
               {currentStep.question && (
-                <div
-                  className="rounded-3xl p-5 border-2 bg-muted border-duo-gray"
-                  style={{ boxShadow: '0 3px 0 #E5E5E5' }}
-                >
-                  <p className="text-[20px] font-black text-duo-text">
+                <div className="rounded-2xl p-5 border border-border bg-card">
+                  <p className="text-xl font-bold text-foreground">
                     {currentStep.question}
                   </p>
                 </div>
@@ -396,9 +387,9 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
                   <Segmenter content={currentStep.content} onSegment={(segs) => setStepData(segs)} />
                   <button
                     onClick={() => setStepData(null)}
-                    className="flex items-center gap-2 font-extrabold text-[13px] uppercase tracking-wide transition-colors text-duo-grayDark"
+                    className="flex items-center gap-2 font-extrabold text-[13px] uppercase tracking-wide transition-colors text-muted-foreground hover:text-foreground"
                   >
-                    <RotateCcw className="w-4 h-4" strokeWidth={3} />
+                    <RotateCcw className="w-4 h-4" strokeWidth={2} />
                     Start over
                   </button>
                 </div>
@@ -417,7 +408,7 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
               animate={{ y: 0 }}
               exit={{ y: 120 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="absolute inset-0 flex items-center justify-between px-4 py-6 bg-background border-t-[3px] border-duo-gray"
+              className="absolute inset-0 flex items-center justify-between px-4 py-6 bg-background border-t border-border"
             >
               <div className="max-w-3xl mx-auto w-full flex items-center justify-between">
                 {/* Prev button */}
@@ -425,16 +416,15 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
                   whileTap={currentStepIndex > 0 ? { scale: 0.93, y: 3 } : {}}
                   onClick={handlePrev}
                   disabled={currentStepIndex === 0}
-                  className="flex items-center gap-2 px-6 py-4 rounded-2xl font-extrabold text-[15px] uppercase tracking-wider transition-all cursor-pointer bg-muted"
-                  style={{
-                    color: currentStepIndex === 0 ? '#AFAFAF' : '#3C3C3C',
-                    boxShadow: currentStepIndex === 0 ? 'none' : '0 4px 0 #E5E5E5',
-                    borderBottom: currentStepIndex === 0 ? 'none' : '4px solid #E5E5E5',
-                    opacity: currentStepIndex === 0 ? 0.4 : 1,
-                    cursor: currentStepIndex === 0 ? 'not-allowed' : 'pointer',
-                  }}
+                  className={`
+                    flex items-center gap-2 px-6 py-4 rounded-2xl font-extrabold text-[15px] uppercase tracking-wider transition-all
+                    ${currentStepIndex === 0 
+                      ? 'bg-muted text-muted-foreground/50 cursor-not-allowed' 
+                      : 'bg-muted text-foreground hover:bg-muted/80 cursor-pointer'}
+                  `}
+                  style={{ boxShadow: currentStepIndex === 0 ? 'none' : '0 4px 0 #e5e5e5', borderBottom: currentStepIndex === 0 ? 'none' : '4px solid #e5e5e5' }}
                 >
-                  <ChevronRight className="w-5 h-5 rotate-180" strokeWidth={3} />
+                  <ChevronRight className="w-5 h-5 rotate-180" strokeWidth={2} />
                   Back
                 </motion.button>
 
@@ -444,14 +434,13 @@ export default function LevelView({ level, courseId, onComplete, onBack }: Level
                   whileTap={canCheck ? { scale: 0.94, y: 4 } : {}}
                   onClick={handleCheck}
                   disabled={!canCheck}
-                  className="px-12 py-4 rounded-2xl font-extrabold text-[18px] uppercase tracking-wider text-white transition-all"
-                  style={{
-                    background: canCheck ? '#58CC02' : '#E5E5E5',
-                    color: canCheck ? '#fff' : '#AFAFAF',
-                    boxShadow: canCheck ? '0 5px 0 #46A302' : 'none',
-                    borderBottom: canCheck ? '5px solid #46A302' : '5px solid transparent',
-                    cursor: canCheck ? 'pointer' : 'not-allowed',
-                  }}
+                  className={`
+                    px-12 py-4 rounded-2xl font-extrabold text-[18px] uppercase tracking-wider transition-all
+                    ${canCheck 
+                      ? 'bg-green-500 text-white cursor-pointer hover:bg-green-600' 
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'}
+                  `}
+                  style={{ boxShadow: canCheck ? '0 5px 0 #22c55e' : 'none', borderBottom: canCheck ? '5px solid #22c55e' : '5px solid transparent' }}
                 >
                   {currentStep?.type === 'info' ? 'Continue' : 'Check'}
                 </motion.button>
@@ -496,31 +485,34 @@ function ChoiceCard({
   disabled: boolean;
   onClick: () => void;
 }) {
-  let stateClass = 'choice-card';
-  if (isSelected && !showResult) stateClass += ' choice-card-selected';
-  if (isCorrect) stateClass += ' choice-card-correct';
-  if (isError) stateClass += ' choice-card-error';
+  const getCardStyles = () => {
+    if (isCorrect) {
+      return { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-700', shadow: '0 4px 0 #22c55e' };
+    }
+    if (isError) {
+      return { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-700', shadow: '0 4px 0 #ef4444' };
+    }
+    if (isSelected && !showResult) {
+      return { bg: 'bg-primary/10', border: 'border-primary/30', text: 'text-primary', shadow: '0 4px 0 #8257E5' };
+    }
+    return { bg: 'bg-card', border: 'border-border', text: 'text-foreground', shadow: '0 4px 0 #e5e5e5' };
+  };
+
+  const styles = getCardStyles();
 
   return (
     <motion.button
-      whileHover={!disabled ? { scale: 1.03 } : {}}
-      whileTap={!disabled ? { scale: 0.96, y: 3 } : {}}
+      whileHover={!disabled ? { scale: 1.02 } : {}}
+      whileTap={!disabled ? { scale: 0.98, y: 2 } : {}}
       onClick={onClick}
       disabled={disabled}
-      className={stateClass}
-      style={{
-        borderBottomWidth: isSelected && !showResult ? '4px' : undefined,
-        borderBottomColor: isSelected && !showResult ? '#8257E5' : undefined,
-        boxShadow: isCorrect
-          ? '0 4px 0 #46A302'
-          : isError
-          ? '0 4px 0 #D03B3B'
-          : isSelected
-          ? '0 4px 0 #6B47C6'
-          : '0 4px 0 #E5E5E5',
-      }}
+      className={`
+        w-full text-left p-4 rounded-xl border-2 font-bold text-lg transition-all
+        ${styles.bg} ${styles.border} ${styles.text}
+      `}
+      style={{ boxShadow: styles.shadow, borderBottomWidth: isSelected && !showResult ? '4px' : '2px' }}
     >
-      <span className="text-[18px] font-extrabold">{option.text}</span>
+      {option.text}
     </motion.button>
   );
 }
