@@ -11,10 +11,10 @@ interface HomeViewProps {
   progress: UserProgress;
   onSelectCourse: (course: Course) => void;
   onAddMaterial: () => void;
-  onClearLevelContent: () => void;
+  onDeleteCourse: (courseId: string) => void;
 }
 
-export default function HomeView({ courses, recentCourses, progress, onSelectCourse, onAddMaterial, onClearLevelContent }: HomeViewProps) {
+export default function HomeView({ courses, recentCourses, progress, onSelectCourse, onAddMaterial, onDeleteCourse }: HomeViewProps) {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(courses[0] || null);
   const streakDays = getStreakDays(progress.currentStreak, progress.lastStudyDate);
 
@@ -93,11 +93,11 @@ export default function HomeView({ courses, recentCourses, progress, onSelectCou
               <h2 className="text-2xl font-black text-foreground tracking-tight">Current Focus</h2>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={onClearLevelContent}
+                  onClick={() => selectedCourse && onDeleteCourse(selectedCourse.id)}
                   className="text-sm font-bold text-red-600 hover:text-red-500 transition-colors flex items-center gap-1"
                 >
                   <Trash2 className="w-4 h-4" />
-                  清空关卡内容
+                  删除课程
                 </button>
                 <button onClick={onAddMaterial} className="text-sm font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                   <Plus className="w-4 h-4" />

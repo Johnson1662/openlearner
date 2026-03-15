@@ -12,7 +12,7 @@ import CourseCreator from '@/components/course/CourseCreator';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
 import AIAssistant from '@/components/assistant/AIAssistant';
 import { mockUserProgress } from '@/data/mockLevels';
-import { fetchUserData, fetchCourses, fetchCourseDetails, recordStudySession, updateProgress, clearGeneratedLevelContent } from '@/lib/api';
+import { fetchUserData, fetchCourses, fetchCourseDetails, recordStudySession, updateProgress } from '@/lib/api';
 import { PageView, Level, UserProgress, Course } from '@/types';
 
 const pageTransition = {
@@ -173,17 +173,14 @@ export default function Home() {
     ]);
   }, []);
 
-  const handleClearLevelContent = async () => {
-    const confirmed = window.confirm('确认清空所有已生成的关卡内容吗？此操作不可撤销。');
+  const handleDeleteCourse = async (courseId: string) => {
+    const confirmed = window.confirm('确认删除这个课程吗？此操作不可撤销。');
     if (!confirmed) return;
 
-    try {
-      const result = await clearGeneratedLevelContent();
-      alert(`已清空：${result.levelsCleared} 个关卡步骤，${result.cacheEntriesCleared} 条缓存。`);
-      await loadUserData();
-    } catch (error) {
-      console.error('Error clearing generated level content:', error);
-      alert('清空失败，请稍后重试。');
+    setCourses((prev) => prev.filter((c) => c.id !== courseId));
+    if (activeCourse?.id === courseId) {
+      setActiveCourse(null);
+      setCurrentView('courses');
     }
   };
 
@@ -212,7 +209,7 @@ export default function Home() {
                 progress={progress}
                 onSelectCourse={handleSelectCourse}
                 onAddMaterial={handleAddMaterial}
-                onClearLevelContent={handleClearLevelContent}
+                onDeleteCourse={handleDeleteCourse}
               />
             </motion.div>
           )}
@@ -232,7 +229,7 @@ export default function Home() {
                 course={activeCourse}
                 onSelectLevel={handleSelectLevel}
                 onBack={handleBackToCourses}
-                onClearLevelContent={handleClearLevelContent}
+                onDeleteCourse={handleDeleteCourse}
               />
             </motion.div>
           )}

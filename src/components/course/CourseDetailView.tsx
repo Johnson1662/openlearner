@@ -8,7 +8,7 @@ interface CourseDetailViewProps {
   course: Course;
   onSelectLevel: (level: Level) => void;
   onBack: () => void;
-  onClearLevelContent: () => void;
+  onDeleteCourse: (courseId: string) => void;
 }
 
 function TimelineLevel({ level, onClick, index, isLast }: { level: Level; onClick: () => void; index: number; isLast: boolean }) {
@@ -142,7 +142,7 @@ function TimelineView({ levels, chapters, onSelectLevel }: { levels: Level[]; ch
   );
 }
 
-export default function CourseDetailView({ course, onSelectLevel, onBack, onClearLevelContent }: CourseDetailViewProps) {
+export default function CourseDetailView({ course, onSelectLevel, onBack, onDeleteCourse }: CourseDetailViewProps) {
   const totalLevels = course?.levels?.length || 0;
   const completedLevels = course?.levels?.filter((l: Level) => l.status === 'completed').length || 0;
   const totalXP = course?.levels?.reduce((s: number, l: Level) => s + (l.xpReward || 0), 0) || 0;
@@ -165,11 +165,11 @@ export default function CourseDetailView({ course, onSelectLevel, onBack, onClea
           </button>
 
           <button
-            onClick={onClearLevelContent}
+            onClick={() => onDeleteCourse(course?.id || '')}
             className="flex items-center gap-2 mb-6 text-sm font-bold text-red-600 hover:text-red-500 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            清空关卡内容
+            删除课程
           </button>
 
 
