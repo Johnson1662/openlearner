@@ -5,7 +5,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from agent.tools import generate_level_content
+from modules.agent.tools import generate_level_content
 
 def test_interleaved_output_has_required_fields():
     """Output must have narrative, images, svg_animations, quiz."""

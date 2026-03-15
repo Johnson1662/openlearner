@@ -7,4 +7,11 @@ node_modules/
 dist/
 build/
 .worktrees/
-
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+backend/logs/
+startup.log
+data/openlearner.db-shm
+data/openlearner.db-wal

@@ -6,7 +6,7 @@ import os
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from agent.tools import retrieve_knowledge, generate_level_content
+from modules.agent.tools import retrieve_knowledge, generate_level_content
 
 
 def test_retrieve_knowledge_returns_json():

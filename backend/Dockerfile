@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install google-adk (not in requirements.txt yet)
-RUN pip install --no-cache-dir google-adk>=1.0.0
+
+
 
 # Copy application code
 COPY . .

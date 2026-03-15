@@ -1,5 +1,7 @@
 import logging
 import os
+import sys
+import io
 from logging.handlers import RotatingFileHandler
 
 def setup_logging(log_dir: str = "logs"):
@@ -23,8 +25,14 @@ def setup_logging(log_dir: str = "logs"):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
-    # Console handler (DEBUG level - show all logs in terminal)
-    console_handler = logging.StreamHandler()
+    # Console handler - wrap stdout with UTF-8 encoding
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    except:
+        pass  # Already configured or not available
+    
+    console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
