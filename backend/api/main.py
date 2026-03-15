@@ -248,10 +248,14 @@ async def delete_course(course_id: str):
         conn = db.get_db()
         cursor = conn.cursor()
         
-        # Delete related records first
-        cursor.execute("DELETE FROM user_progress WHERE course_id = ?", (course_id,))
-        cursor.execute("DELETE FROM user_answers WHERE course_id = ?", (course_id,))
-        cursor.execute("DELETE FROM level_content_cache WHERE course_id = ?", (course_id,))
+        # Get list of existing tables
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        existing_tables = {row[0] for row in cursor.fetchall()}
+        
+        # Delete from related tables that exist
+        for table in ['user_progress', 'user_answers', 'level_content_cache', 'course_materials', 'user_feedback', 'study_records']:
+            if table in existing_tables:
+                cursor.execute(f"DELETE FROM {table} WHERE course_id = ?", (course_id,))
         
         # Delete course
         cursor.execute("DELETE FROM courses WHERE id = ?", (course_id,))
